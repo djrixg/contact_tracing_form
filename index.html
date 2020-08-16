@@ -48,7 +48,7 @@
 	  </div>
 	  <button class="btn btn-primary" onclick="generate_qr()">Submit</button>
 
-	<p class="lead">Our goal is to have a universal format for Contact Tracing QR codes that any developers (even beginners) embed into their systems.
+	<p class="lead">Our goal is to have a universal format for Contact Tracing QR codes that any developers (even beginners) can embed into their systems.
 		  We are using a JS library from <a href="https://davidshimjs.github.io/qrcodejs/">davidshimjs</a> to generate these QR codes even offline. Save this page to your device and this will work without internet.</p>
 	</div>
 <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
@@ -61,7 +61,7 @@
         </button>
       </div>
       <div class="modal-body" id="modal_body">
-        <div id="qrcode" class="text-center"></div>
+        <div id="qrcode"></div>
         <br>
         <p>Screenshot and keep this at all times.<br>This QR Code will enable you to enter the establishments faster</p>
         <div style="background-color: #d3d3d3;">
@@ -107,6 +107,7 @@
 			province:$("#province").val()
 		}
 		console.log(temp);
+		$("#qrcode").html("");
 		new QRCode(document.getElementById("qrcode"),{
 		    text:  JSON.stringify(temp),
 		    width: 250,
