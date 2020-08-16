@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+	<script type="text/javascript" src="jquery.min.js"></script>
+	<script type="text/javascript" src="jquery-3.2.1.slim.min.js"></script>
+	<script type="text/javascript" src="bootstrap.min.js"></script>
+	<script type="text/javascript" src="qrcode.min.js"></script>
+	<!-- <script type="text/javascript" src="city.js"></script> -->
+	<!-- <script src="https://f001.backblazeb2.com/file/buonzz-assets/jquery.ph-locations-v1.0.0.js"></script> -->
+	<title>Personal Information</title>
+</head>
+<body>
+	<div class="container m-5">
+		<h2>Personal Information QR Code Generator</h2>
+		<p class="lead">
+		  This form does not collect any data. This simply generates QR Codes that are small, unencrypted, and simple to setup to enable establishments to scan these codes without the need expensive contact tracing systems.
+		</p>
+	  <div class="form-group">
+	    <label for="firstName">First Name</label>
+	    <input required type="text" class="form-control" id="firstName">
+	  </div>
+	  <div class="form-group">
+	    <label for="middleName">Middle Name</label>
+	    <input required type="text" class="form-control" id="middleName">
+	  </div>
+	  <div class="form-group">
+	    <label for="lastName">Last Name</label>
+	    <input required type="text" class="form-control" id="lastName">
+	  </div>
+	  <div class="form-group">
+	    <label for="contactNumber">Contact Number</label>
+	    <input required type="text" class="form-control" id="contactNumber">
+	  </div>
+	  <div class="form-group">
+	    <label for="address">Complete Address</label>
+	    <input required type="text" class="form-control" id="address">
+	  </div>
+	  <div class="form-group">
+	    <label for="city">City</label>
+	    <select required class="form-control" id="city">
+	    </select>
+	  </div>
+	  <div class="form-group">
+	    <label for="province">Province</label>
+	    <select required class="form-control" id="province">
+	    </select>
+	  </div>
+	  <button class="btn btn-primary" onclick="generate_qr()">Submit</button>
+
+	<p class="lead">Our goal is to have a universal format for Contact Tracing QR codes that any developers (even beginners) embed into their systems.
+		  We are using a JS library from <a href="https://davidshimjs.github.io/qrcodejs/">davidshimjs</a> to generate these QR codes even offline. Save this page to your device and this will work without internet.</p>
+	</div>
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalLabel">Universal Contact Tracing QR Code</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="modal_body">
+        <div id="qrcode" class="text-center"></div>
+        <br>
+        <p>Screenshot and keep this at all times.<br>This QR Code will enable you to enter the establishments faster</p>
+        <div style="background-color: #d3d3d3;">
+        Raw Data:
+        <small id="samp" style="word-wrap: break-word;"></small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+	<script type="text/javascript">
+		var cities = ["Alaminos City","Angeles City","Antipolo City","Bacolod City","Bago City","Baguio City","Bais City","Balanga City","Batangas City","Bayawan City","Bisilig City","Butuan City","Cabanatuan City","Cadiz City","Cagayan de Oro City","Calamba City","Calapan City","Calbayog City","Caloocan City","Candon City","Canlaon City","Cauayan City","Cavite City","Cebu City","Cotabato City","Dagupan City","Danao City","Dapitan City","Davao City","Digos City","Dipolog City","Dumaguete City","Escalante City","Gapan City","General Santos City","Gingoog City","Himamaylan City","Iligan City","Iloilo City","Iriga City",
+"Isabela City","Island Garden City of Samal","Kabankalan City","Kidapawan City","Koronadal City","La Carlota City","Laoag City","Lapu-Lapu City","Las Piñas City","Legazpi City","Ligao City","Lipa City","Lucena City","Maasin City","Makati City","Malabon City","Malaybalay City","Malolos City","Mandaluyong City","Mandaue City","Manila","Maragondon","Marawi City","Masbate City","Muntinlupa City","Naga City","Olongapo City","Ormoc City","Oroquieta City","Ozamis City","Pagadian City","Palayan City","Legazpi City","Parañaque City","Pasay City","Pasig City","Passi City","Puerto Princesa City","Quezon City","Roxas City","Sagay City","San Carlos City, Negros Occidental","San Carlos City, Pangasinan","San Fernando City, La Union","San Fernando City, Pampanga","San Jose City","San Jose del Monte City","San Pablo City","Santa Rosa City","Santiago City","Muñ City","Silay City","Sipalay City","Sorsogon City","Surigao City","Tabaco City","Tacloban City","Tacurong City",
+"Tagaytay City","Tagbilaran City","Tagum City","Talisay City, Cebu", "Talisay City, Negros Occidental","Tanauan City","Tangub City","Tanjay City","Tarlac City","Taguig City","Toledo City","Trece Martires City","Tuguegarao City","Urdaneta City","Valencia City","Valenzuela City","Victorias City","Vigan City","Zamboanga City"];
+	var province = ["Abra","Agusan del Norte","Agusan del Sur","Aklan","Albay","Antique","Apayao","Aurora","Basilan","Bataan","Batanes","Batangas","Benguet","Biliran","Bohol","Bukidnon","Bulacan","Cagayan","Camarines Norte","Camarines Sur","Camiguin","Capiz","Catanduanes","Cavite","Cebu","Cotabato","Davao de Oro","Davao del Norte","Davao del Sur","Davao Occidental","Davao Oriental","Dinagat Islands","Eastern Samar","Guimaras","Ifugao","Ilocos Norte","Ilocos Sur","Iloilo","Isabela","Kalinga","La Union","Laguna","Lanao del Norte","Lanao del Sur","Leyte","Maguindanao","Marinduque","Masbate","Misamis Occidental","Misamis Oriental","Mountain Province","Negros Occidental","Negros Oriental","Northern Samar","Nueva Ecija","Nueva Vizcaya","Occidental Mindoro","Oriental Mindoro","Palawan","Pampanga","Pangasinan","Quezon","Quirino","Rizal","Romblon","Samar","Sarangani","Siquijor","Sorsogon","South Cotabato","Southern Leyte","Sultan Kudarat","Sulu","Surigao del Norte","Surigao del Sur","Tarlac","Tawi-Tawi","Zambales","Zamboanga del Norte","Zamboanga del Sur","Zamboanga Sibugay","Metro Manila"];
+	$.each(cities, function( index, value ) {
+	  var temp = "";
+	  if(value == "Cagayan de Oro City"){
+	  	temp = "selected";
+	  }
+	  $("#city").append("<option value='"+value+"' "+temp+">"+value+"</option>");
+	});
+	$.each(province, function( index, value ) {
+	  var temp = "";
+	  if(value == "Misamis Oriental"){
+	  	temp = "selected";
+	  }
+	  $("#province").append("<option value='"+value+"' "+temp+">"+value+"</option>");
+	});
+	function generate_qr(){
+		 // is-invalid
+		var temp = {
+			firstName:$("#firstName").val(),
+			middleName:$("#middleName").val(),
+			lastName:$("#lastName").val(),
+			contactNumber:$("#contactNumber").val(),
+			address:$("#address").val(),
+			city:$("#city").val(),
+			province:$("#province").val()
+		}
+		console.log(temp);
+		new QRCode(document.getElementById("qrcode"),{
+		    text:  JSON.stringify(temp),
+		    width: 250,
+		    height: 250,
+		    colorDark : "#000000",
+		    colorLight : "#ffffff",
+		    correctLevel : QRCode.CorrectLevel.H
+		});
+		$("#samp").html(JSON.stringify(temp));
+		$("#modal").modal("show");
+	}
+	</script>
+</body>
+</html>
+
+<!-- firstName
+middleName
+lastName
+contactNumber
+address
+city
+province -->
