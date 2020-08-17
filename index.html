@@ -6,6 +6,7 @@
 	<script type="text/javascript" src="jquery-3.2.1.slim.min.js"></script>
 	<script type="text/javascript" src="bootstrap.min.js"></script>
 	<script type="text/javascript" src="qrcode.min.js"></script>
+	<script type="text/javascript" src="jquery.cookie.js"></script>
 	<link rel="manifest" href="manifest.webmanifest">
 	<!-- <script src="https://f001.backblazeb2.com/file/buonzz-assets/jquery.ph-locations-v1.0.0.js"></script> -->
 	<title>Personal Information</title>
@@ -65,7 +66,9 @@
         </button>
       </div>
       <div class="modal-body" id="modal_body">
+      	<div class="text-center">
         <div id="qrcode"></div>
+        </div>
         <br>
         <p>Screenshot and keep this at all times.<br>This QR Code will enable you to enter the establishments faster</p>
         <div style="background-color: #d3d3d3;">
@@ -98,29 +101,68 @@
 	  }
 	  $("#province").append("<option value='"+value+"' "+temp+">"+value+"</option>");
 	});
+	$("#firstName").attr("value",$.cookie("firstName"));
+	$("#middleName").attr("value",$.cookie("middleName"));
+	$("#lastName").attr("value",$.cookie("lastName"));
+	$("#contactNumber").attr("value",$.cookie("contactNumber"));
+	$("#address").attr("value",$.cookie("address"));
+	$("#city").attr("value",$.cookie("city"));
+	$("#province").attr("value",$.cookie("province"));
 	function generate_qr(){
 		 // is-invalid
-		var temp = {
-			firstName:$("#firstName").val(),
-			middleName:$("#middleName").val(),
-			lastName:$("#lastName").val(),
-			contactNumber:$("#contactNumber").val(),
-			address:$("#address").val(),
-			city:$("#city").val(),
-			province:$("#province").val()
-		}
-		console.log(temp);
-		$("#qrcode").html("");
-		new QRCode(document.getElementById("qrcode"),{
-		    text:  JSON.stringify(temp),
-		    width: 250,
-		    height: 250,
-		    colorDark : "#000000",
-		    colorLight : "#ffffff",
-		    correctLevel : QRCode.CorrectLevel.H
-		});
-		$("#samp").html(JSON.stringify(temp));
-		$("#modal").modal("show");
+		 if( $("#firstName").val()!="" && $("#middleName").val()!="" && $("#lastName").val()!="" && $("#contactNumber").val()!="" && $("#address").val()!="" && $("#city").val()!="" && $("#province").val()!=""){
+			var temp = {
+				firstName:$("#firstName").val(),
+				middleName:$("#middleName").val(),
+				lastName:$("#lastName").val(),
+				contactNumber:$("#contactNumber").val(),
+				address:$("#address").val(),
+				city:$("#city").val(),
+				province:$("#province").val()
+			}
+			// $.cookie("test", 1);
+			$.cookie("firstName",$("#firstName").val());
+			$.cookie("middleName",$("#middleName").val());
+			$.cookie("lastName",$("#lastName").val());
+			$.cookie("contactNumber",$("#contactNumber").val());
+			$.cookie("address",$("#address").val());
+			$.cookie("city",$("#city").val());
+			$.cookie("province",$("#province").val());
+			// console.log(temp);
+			$("#qrcode").html("");
+			new QRCode(document.getElementById("qrcode"),{
+			    text:  JSON.stringify(temp),
+			    width: 250,
+			    height: 250,
+			    colorDark : "#000000",
+			    colorLight : "#ffffff",
+			    correctLevel : QRCode.CorrectLevel.H
+			});
+			$("#samp").html(JSON.stringify(temp));
+			$("#modal").modal("show");
+			}else{
+				if($("#firstName").val()==""){$("#firstName").addClass("is-invalid").attr('onchange',"$(this).removeClass('is-invalid')");}else{
+					$("#firstName").addClass("is-valid").attr('onchange',"$(this).removeClass('is-valid')");
+				}
+				if($("#middleName").val()==""){$("#middleName").addClass("is-invalid").attr('onchange',"$(this).removeClass('is-invalid')");}else{
+					$("#middleName").addClass("is-valid").attr('onchange',"$(this).removeClass('is-valid')");
+				}
+				if($("#lastName").val()==""){$("#lastName").addClass("is-invalid").attr('onchange',"$(this).removeClass('is-invalid')");}else{
+					$("#lastName").addClass("is-valid").attr('onchange',"$(this).removeClass('is-valid')");
+				}
+				if($("#contactNumber").val()==""){$("#contactNumber").addClass("is-invalid").attr('onchange',"$(this).removeClass('is-invalid')");}else{
+					$("#contactNumber").addClass("is-valid").attr('onchange',"$(this).removeClass('is-valid')");
+				}
+				if($("#address").val()==""){$("#address").addClass("is-invalid").attr('onchange',"$(this).removeClass('is-invalid')");}else{
+					$("#address").addClass("is-valid").attr('onchange',"$(this).removeClass('is-valid')");
+				}
+				if($("#city").val()==""){$("#city").addClass("is-invalid").attr('onchange',"$(this).removeClass('is-invalid')");}else{
+					$("#city").addClass("is-valid").attr('onchange',"$(this).removeClass('is-valid')");
+				}
+				if($("#province").val()==""){$("#province").addClass("is-invalid").attr('onchange',"$(this).removeClass('is-invalid')");}else{
+					$("#province").addClass("is-valid").attr('onchange',"$(this).removeClass('is-valid')");
+				}
+			}
 	}
 	</script>
 	<script src="app.js"></script>
