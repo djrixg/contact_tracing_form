@@ -1,5 +1,3 @@
 if('serviceWorker' in navigator){
-	alert("YES");
-}else{
-	alert("NO");
+	alert("Press Options and Click Add to Homescreen to use this even offline.");
 }
