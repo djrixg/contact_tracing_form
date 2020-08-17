@@ -1,0 +1,13 @@
+{
+	"name": "Contact Tracing QR Generator",
+	"short_name": "CTracer QR",
+	"start_url":".",
+	"display":"standalone",
+	"background_color":"#fff",
+	"description":"A QR code generator for contact tracing purposes",
+	"icons":[{
+		"src":"edit.png",
+		"sizes":"256x256",
+		"type":"image/png"
+	}]
+}
