@@ -9,83 +9,149 @@
   <title>Web QR Scanner</title>
 
   <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
-  <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null" href="https://unpkg.com/normalize.css@8.0.0/normalize.css">
-  <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null" href="https://unpkg.com/milligram@1.3.0/dist/milligram.min.css">
+  <!-- <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null" href="https://unpkg.com/normalize.css@8.0.0/normalize.css"> -->
+  <!-- <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null" href="https://unpkg.com/milligram@1.3.0/dist/milligram.min.css"> -->
+  <link rel="stylesheet" type="text/css" href="../bootstrap.min.css">
+  <script type="text/javascript" src="../jquery.min.js"></script>
+  <script type="text/javascript" src="../jquery-3.2.1.slim.min.js"></script>
+  <script type="text/javascript" src="../bootstrap.min.js"></script>
+  <script type="text/javascript" src="../qrcode.min.js"></script>
+  <script type="text/javascript" src="../jquery.cookie.js"></script>
 </head>
 
 <body>
-
-  <main class="wrapper" style="padding-top:2em">
-
-    <section class="container" id="demo-content">
-      <h1 class="title">Scan QR Code from Video Camera</h1>
-
-      <div>
-        <a class="button" id="startButton">Start</a>
-        <a class="button" id="resetButton">Reset</a>
+<div class="container d-none" id="view_history">
+  <button class="btn btn-outline-primary float-right" onclick='$("#view_history").addClass("d-none");$("#input_data").removeClass("d-none");'>Back</button>
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th>Datetime</th>
+        <th>Name</th>
+        <th>Temp</th>
+        <th>#</th>
+        <th>Address</th>
+        <th>City</th>
+        <th>Province</th>
+      </tr>
+    </thead>
+    <tbody id="history_list">
+    </tbody>
+  </table>
+</div>
+<div class="container" id="input_data">
+<div class="btn-group-vertical ml-4 mt-4" role="group" aria-label="keypad">
+  <h3 class="h3">Enter Temperature: </h3>
+    <div class="btn-group">
+        <input class="text-center form-control mb-2" onkeyup="check($(this))" id="temp" autofocus>
+    </div>
+    <div class="btn-group">
+        <button type="button" class="btn btn-outline-secondary py-3" onclick="change('1');">1</button>
+        <button type="button" class="btn btn-outline-secondary py-3" onclick="change('2');">2</button>
+        <button type="button" class="btn btn-outline-secondary py-3" onclick="change('3');">3</button>
+    </div>
+    <div class="btn-group">
+        <button type="button" class="btn btn-outline-secondary py-3" onclick="change('4');">4</button>
+        <button type="button" class="btn btn-outline-secondary py-3" onclick="change('5');">5</button>
+        <button type="button" class="btn btn-outline-secondary py-3" onclick="change('6');">6</button>
+    </div>
+    <div class="btn-group">
+        <button type="button" class="btn btn-outline-secondary py-3" onclick="change('7');">7</button>
+        <button type="button" class="btn btn-outline-secondary py-3" onclick="change('8');">8</button>
+        <button type="button" class="btn btn-outline-secondary py-3" onclick="change('9');">9</button>
+    </div>
+    <div class="btn-group">
+        <button type="button" class="btn btn-outline-secondary py-3" onclick="change('.');">.</button>
+        <button type="button" class="btn btn-outline-secondary py-3" onclick="change('0');">0</button>
+        <button type="button" class="btn btn-outline-secondary py-3" onclick="change(null)">&lt;</button>
+    </div>
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary py-3" onclick="scan_qr()">Go</button>
+    </div>
+  <label for="decoding-style">Scan Mode:</label>
+  <select id="decoding-style" class="form-control" onchange="change_mode()" size="1">
+    <option value="once">With Temperature</option>
+    <option value="continuously">Without Temperature</option>
+  </select>
+        <button type="button" class="btn btn-outline-secondary py-3" onclick="history()">History</button>
+</div>
+  <!-- <button class="btn btn-primary" onclick="scan_qr()">Scan QR</button> -->
+</div>
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalLabel">Scan customer QR</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
+      <div class="modal-body" id="modal_body">
+        <section class="container" id="demo-content">
+              <div class="d-none">
+                <a class="button" id="startButton">Start</a>
+                <a class="button" id="resetButton">Reset</a>
+              </div>
 
-      <div>
-        <video id="video" width="300" height="200" style="border: 1px solid gray"></video>
+              <div>
+                <video id="video" width="300" height="200" style="border: 1px solid gray"></video>
+              </div>
+
+              <div id="sourceSelectPanel" style="display:none">
+                <label for="sourceSelect">Change camera:</label>
+                <select id="sourceSelect" class="form-control form-control-sm" style="max-width:400px">
+                </select>
+              </div>
+
+              <!-- <label>Result:</label>
+              <pre><code id="result"></code></pre> -->
+            </section>
       </div>
-
-      <div id="sourceSelectPanel" style="display:none">
-        <label for="sourceSelect">Change video source:</label>
-        <select id="sourceSelect" style="max-width:400px">
-        </select>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
       </div>
+    </div>
+  </div>
 
-      <div style="display: table">
-        <label for="decoding-style"> Decoding Style:</label>
-        <select id="decoding-style" size="1">
-          <option value="once">Decode once</option>
-          <option value="continuously">Decode continuously</option>
-        </select>
-      </div>
-
-      <label>Result:</label>
-      <pre><code id="result"></code></pre>
-    </section>
-  </main>
-
-  <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
+</div>
+  <script type="text/javascript" src="js/qrscanner.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js" integrity="sha256-/H4YS+7aYb9kJ5OKhFYPUjSJdrtV6AeyJOtTkw6X72o=" crossorigin="anonymous"></script>
   <script type="text/javascript">
+    var db = openDatabase('CTracer_DB', '1.0', 'Contact Tracing List', 2 * 1024 * 1024);
+    db.transaction(function (tx) {
+      // tx.executeSql('DROP TABLE ctracer');
+      tx.executeSql('CREATE TABLE IF NOT EXISTS ctracer (data);');
+      // tx.executeSql('INSERT INTO ctracer (data) VALUES ("'++'")');
+      // tx.executeSql('SELECT * FROM ctracer', [], function (tx, results) {
+      //   var len = results.rows.length, i;
+      //   for (i = 0; i < len; i++) {
+      //     console.log(results.rows.item(i).text);
+      //   }
+      // });
+    });
+
     function decodeOnce(codeReader, selectedDeviceId) {
       codeReader.decodeFromInputVideoDevice(selectedDeviceId, 'video').then((result) => {
-        console.log(result)
-        document.getElementById('result').textContent = result.text
+        // document.getElementById('result').textContent = result.text
+        process_result(result.text);
+        // alert(result);
       }).catch((err) => {
         console.error(err)
-        document.getElementById('result').textContent = err
+        // document.getElementById('result').textContent = err
       })
     }
 
     function decodeContinuously(codeReader, selectedDeviceId) {
       codeReader.decodeFromInputVideoDeviceContinuously(selectedDeviceId, 'video', (result, err) => {
         if (result) {
-          // properly decoded qr code
-          console.log('Found QR code!', result)
-          document.getElementById('result').textContent = result.text
-        }
-        if (err) {
-          if (err instanceof ZXing.NotFoundException) {
-            console.log('No QR code found.')
-          }
-          if (err instanceof ZXing.ChecksumException) {
-            console.log('A code was found, but it\'s read value was not valid.')
-          }
-          if (err instanceof ZXing.FormatException) {
-            console.log('A code was found, but it was in a invalid format.')
-          }
+          // document.getElementById('result').textContent = result.text
+          process_result(result.text);
+          alert(result.text);
         }
       })
     }
-
+    let selectedDeviceId;
+    const codeReader = new ZXing.BrowserQRCodeReader();
     window.addEventListener('load', function () {
-      let selectedDeviceId;
-      const codeReader = new ZXing.BrowserQRCodeReader();
-      console.log('ZXing code reader initialized');
-
       codeReader.getVideoInputDevices()
         .then((videoInputDevices) => {
           const sourceSelect = document.getElementById('sourceSelect')
@@ -94,15 +160,15 @@
             var c = 0
             videoInputDevices.forEach((element) => {
               const sourceOption = document.createElement('option')
-              sourceOption.text = element.label
-              sourceOption.value = element.deviceId
+              sourceOption.text = element.label;
+              sourceOption.value = element.deviceId;
               if(c == 1){
                 if(getMobileOperatingSystem()!="unknown"){
-                  selectedDeviceId = videoInputDevices[1].deviceId
+                  selectedDeviceId = videoInputDevices[1].deviceId;
                   sourceOption.selected = "selected";
                 }
               }
-              sourceSelect.appendChild(sourceOption)
+              sourceSelect.appendChild(sourceOption);
               c++;
             })
             sourceSelect.onchange = () => {
@@ -114,21 +180,14 @@
           }
 
           document.getElementById('startButton').addEventListener('click', () => {
-
-            const decodingStyle = document.getElementById('decoding-style').value;
-
-            if (decodingStyle == "once") {
-              decodeOnce(codeReader, selectedDeviceId);
-            } else {
-              decodeContinuously(codeReader, selectedDeviceId);
-            }
-            console.log(`Started decode from camera with id ${selectedDeviceId}`)
+              start_scan();
+            // console.log(`Started decode from camera with id ${selectedDeviceId}`)
           })
 
           document.getElementById('resetButton').addEventListener('click', () => {
             codeReader.reset()
             document.getElementById('result').textContent = '';
-            console.log('Reset.')
+            // console.log('Reset.')
           })
 
         })
@@ -149,14 +208,144 @@ function getMobileOperatingSystem() {
     }
     return "unknown";
 }
-// if (typeof(Storage) !== "undefined") {
-//   sessionStorage.setItem("temp_key", "Test");
-//   alert(sessionStorage.getItem("temp_key"));
-// } else {
-//   alert("Sorry, your browser does not support Web Storage...");
-// }
-  </script>
+function start_scan(){
+    const decodingStyle = $('#decoding-style').val();
+    if (decodingStyle == "once") {
+      decodeOnce(codeReader, selectedDeviceId);
+    } else {
+      decodeContinuously(codeReader, selectedDeviceId);
+    }
+}
+function change_mode(){
+  const decodingStyle = $('#decoding-style').val();
+  if(decodingStyle == "once"){
+    location.reload();
+  }else{
+    scan_qr();
+  }
+}
+function stop_scan(){
+    codeReader.reset();
+    $('#result').html = '';
+}
+function scan_qr(){
+  start_scan();
+  $("#modal").modal("show");
+}
+$('#modal').on('hidden.bs.modal', function () {
+  if($('#decoding-style').val() == "once"){
+    stop_scan();
+  }else{
+    location.reload();
+  }
+})
+function change(ch){
+  if(ch!=null){
+    if(ch=="."){
+      if(!$('#temp').val().includes(".")){
+        $('#temp').val($('#temp').val() + ch);
+      } 
+    }else{
+      if(!isNaN(ch)){
+        $('#temp').val($('#temp').val() + ch);
+      }
+    }
+  }else{
+    $('#temp').val($('#temp').val().slice(0, -1));
+  }
+}
+function check(val){
+  if(isNaN(val.val())){
+    alert("Enter numbers ONLY!");
+    val.val("");
+  }
+  val.on("keyup", function(event) {
+    if (event.keyCode === 13) {
+      scan_qr();
+    }
+  });
+}
+function process_result(result){
+  result = JSON.parse(result);
+  result["datetime"] = new Date().toLocaleString();
+  result["temperature"] = $("#temp").val();
+  db.transaction(function (tx) {
+    var sql = 'INSERT INTO ctracer (data) VALUES ("'+CryptoJS.AES.encrypt(JSON.stringify(result), sessionStorage.getItem("temp_key"))+'")';
+    tx.executeSql(sql);
+    console.log(JSON.stringify(result));
+  });
+  if($('#decoding-style').val() == "once"){
+    $("#modal").modal("hide");
+  }
+  // var encrypted = CryptoJS.AES.encrypt(result, sessionStorage.getItem("temp_key"));
+  // var decryptedBytes = CryptoJS.AES.decrypt(encrypted, sessionStorage.getItem("temp_key")).toString(CryptoJS.enc.Utf8);
+  // alert(decryptedBytes);
+  // alert(result);
+}
+function history(){
+  db.transaction(function (tx) {
+    tx.executeSql('SELECT * FROM ctracer', [], function (tx, results) {
+      $("#history_list").html("");
+      var len = results.rows.length, i;
+      $("#view_history").removeClass("d-none");
+      $("#input_data").addClass("d-none");
+      for (i = 0; i < len; i++) {
+        var data = CryptoJS.AES.decrypt(results.rows[i]["data"], sessionStorage.getItem("temp_key")).toString(CryptoJS.enc.Utf8);
+        data = JSON.parse(data);
+        if(data["temperature"]!=""){data["temperature"] += "°C"}
+        var temp = `<tr>
+                    <td>`+data["datetime"]+`</td>
+                    <td>`+data["firstName"]+" "+data["middleName"]+" "+data["lastName"]+`</td>
+                    <td>`+data["temperature"]+`</td>
+                    <td>`+data["contactNumber"]+`</td>
+                    <td>`+data["address"]+`</td>
+                    <td>`+data["city"]+`</td>
+                    <td>`+data["province"]+`</td>
+                  </tr>`;
+        $("#history_list").append(temp);
+      }
+      $("#history_modal").modal("show");
+    });
+  });
+}
+    // var encrypted = CryptoJS.AES.encrypt(result, sessionStorage.getItem("temp_key"));
+  // var decryptedBytes = CryptoJS.AES.decrypt(encrypted, sessionStorage.getItem("temp_key")).toString(CryptoJS.enc.Utf8);
+  // alert(decryptedBytes);
 
+    if (typeof(Storage) !== "undefined") {
+      if(sessionStorage.getItem("temp_key")==null){
+        var key = "";
+        while(key==""){
+          key = prompt("You need to enter an encryption key to secure the data collected through this app to avoid hacking. Please backup the encryption key as this will be required everytime you access the saved data.Copy the typed key before pressing okay.\n\nEnter encryption key:");
+          if(key == null){
+            key="";
+          }
+        }
+        sessionStorage.setItem("temp_key", key);
+        alert("Without this key, you will never access the data collected from this device ever again. Please make sure to backup this key.\n\nEntered key: "+key);
+      }
+      // sessionStorage.setItem("temp_key", "Test");
+      // if(sessionStorage.getItem("temp_key")!=null){
+      //   alert(sessionStorage.getItem("temp_key"));
+      // }
+    } else {
+      alert("Sorry, your browser does not support Web Storage...");
+    }
+  </script>
+<style type="text/css">
+/*
+  .modal-dialog {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+.modal-content {
+  height: auto;
+  min-height: 100%;
+  border-radius: 0;
+}*/
+</style>
 </body>
 
 </html>
