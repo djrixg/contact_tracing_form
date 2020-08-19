@@ -46,15 +46,6 @@
 
     <script type="text/javascript" src="js/qrscanner.js"></script>
     <script type="text/javascript">
-
-      function copy_key() {
-        var copyText = document.getElementById("key");
-        copyText.select();
-        copyText.setSelectionRange(0, 99999)
-        document.execCommand("copy");
-        alert("Secret key copied!");
-        // alert("Link copied!\n" + copyText.value);
-      }
           if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
     console.log("enumerateDevices() not supported.");
   }
