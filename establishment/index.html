@@ -1,101 +1,151 @@
- <!DOCTYPE html>
- <html>
- <head>
-  <title>QR Contact Tracer</title>
+
+<!doctype html>
+<html lang="en">
+
+<head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="css/bootstrap.min.css">
-  <script src="js/jquery.min.js"></script>
-  <script src="js/bootstrap.min.js"></script>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="js/removeBanner.js"></script>
- </head>
- <body>
-<div class="container">
-  <div class="row">
-      <div class="jumbotron col-md-12 col-xs-12 text-center">
-  <p>Please scan QR Code</p>
-    <main class="wrapper">
-      <section class="container">
-        <!-- <div>
-          <center>
-            <a class="button" id="startButton">Scan QR</a>
-            <a class="button" id="resetButton">Reset</a>
-          </center>
-        </div> -->
-        <div id="qr_output">
-          <video id="video" width="100%" height="250"></video>
-        </div>
-        <!-- <code id="result"></code> -->
-      </section>
-    </main>
-        <!-- <div style="visibility: hidden"> -->
-              <div id="sourceSelectPanel" style="display:none">
-                <label for="sourceSelect">Change video source:</label>
-                <select id="sourceSelect" style="max-width:400px">
-                </select>
-              </div>
-              <div style="display: table">
-                <label for="decoding-style"> Decoding Style:</label>
-                <select id="decoding-style" size="1">
-                  <option value="continuously">Decode continuously</option>
-                  <option value="once">Decode once</option>
-                </select>
-              </div>
-        <!-- </div> -->
+  <meta name="author" content="ZXing for JS">
 
-    <script type="text/javascript" src="js/qrscanner.js"></script>
-    <script type="text/javascript">
-          if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-    console.log("enumerateDevices() not supported.");
-  }
-      function decodeOnce(codeReader, selectedDeviceId) {
-        codeReader.decodeFromInputVideoDevice(selectedDeviceId, 'video').then((result) => {
-          console.log(result)
-          document.getElementById('result').textContent = result.text//THIS IS THE RESULT!!!
-        }).catch((err) => {
-          console.error(err)
-          document.getElementById('result').textContent = err
-        })
-      }
-      function decodeContinuously(e, o) {
-      e.decodeFromInputVideoDeviceContinuously(o, "video", (e, o) => {
-          e && (redirect(e.text), document.getElementById("result").textContent = e.text)
-            , o && (o instanceof ZXing.NotFoundException && console.log("No QR code found."), o instanceof ZXing.ChecksumException && console.log("A code was found, but it's read value was not valid."), o instanceof ZXing.FormatException && console.log("A code was found, but it was in a invalid format.")
-          )
+  <title>ZXing TypeScript | Decoding from camera stream</title>
+
+  <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+  <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null" href="https://unpkg.com/normalize.css@8.0.0/normalize.css">
+  <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null" href="https://unpkg.com/milligram@1.3.0/dist/milligram.min.css">
+</head>
+
+<body>
+
+  <main class="wrapper" style="padding-top:2em">
+
+    <section class="container" id="demo-content">
+      <h1 class="title">Scan QR Code from Video Camera</h1>
+
+      <div>
+        <a class="button" id="startButton">Start</a>
+        <a class="button" id="resetButton">Reset</a>
+      </div>
+
+      <div>
+        <video id="video" width="300" height="200" style="border: 1px solid gray"></video>
+      </div>
+
+      <div id="sourceSelectPanel" style="display:none">
+        <label for="sourceSelect">Change video source:</label>
+        <select id="sourceSelect" style="max-width:400px">
+        </select>
+      </div>
+
+      <div style="display: table">
+        <label for="decoding-style"> Decoding Style:</label>
+        <select id="decoding-style" size="1">
+          <option value="once">Decode once</option>
+          <option value="continuously">Decode continuously</option>
+        </select>
+      </div>
+
+      <label>Result:</label>
+      <pre><code id="result"></code></pre>
+    </section>
+  </main>
+
+  <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
+  <script type="text/javascript">
+    function decodeOnce(codeReader, selectedDeviceId) {
+      codeReader.decodeFromInputVideoDevice(selectedDeviceId, 'video').then((result) => {
+        console.log(result)
+        document.getElementById('result').textContent = result.text
+      }).catch((err) => {
+        console.error(err)
+        document.getElementById('result').textContent = err
       })
-      }
-      function redirect(tt){
-        console.log(tt);
-        alert(tt);
-      }
-      window.addEventListener("load", function() {
-          let e;var temp = 0;var android="";
-          const o = new ZXing.BrowserQRCodeReader;
-          console.log("ZXing code reader initialized"), o.getVideoInputDevices().then(t => {
-              const n = document.getElementById("sourceSelect");
-              if (e = t[0].deviceId, t.length >= 1) {
-                  t.forEach(e => {
-                      if(temp==1){
-                        android = e.deviceId;
-                      }
-                      const o = document.createElement("option");
-                      temp+=1;
-                      o.text = e.label, o.value = e.deviceId, n.appendChild(o)
-                  }), n.onchange = (() => {
-                      e = n.value
-                  }), document.getElementById("sourceSelectPanel").style.display = "block"
-              }
-              decodeContinuously(o, e), console.log(`Started decode from camera with id ${e}`)
-          }).catch(e => {
-              console.error(e)
-              // ,window.location.href='<?=$url?>secret.php?id=<?=$keyy?>';
+    }
+
+    function decodeContinuously(codeReader, selectedDeviceId) {
+      codeReader.decodeFromInputVideoDeviceContinuously(selectedDeviceId, 'video', (result, err) => {
+        if (result) {
+          // properly decoded qr code
+          console.log('Found QR code!', result)
+          document.getElementById('result').textContent = result.text
+        }
+
+        if (err) {
+          // As long as this error belongs into one of the following categories
+          // the code reader is going to continue as excepted. Any other error
+          // will stop the decoding loop.
+          //
+          // Excepted Exceptions:
+          //
+          //  - NotFoundException
+          //  - ChecksumException
+          //  - FormatException
+
+          if (err instanceof ZXing.NotFoundException) {
+            console.log('No QR code found.')
+          }
+
+          if (err instanceof ZXing.ChecksumException) {
+            console.log('A code was found, but it\'s read value was not valid.')
+          }
+
+          if (err instanceof ZXing.FormatException) {
+            console.log('A code was found, but it was in a invalid format.')
+          }
+        }
+      })
+    }
+
+    window.addEventListener('load', function () {
+      let selectedDeviceId;
+      const codeReader = new ZXing.BrowserQRCodeReader()
+      console.log('ZXing code reader initialized')
+
+      codeReader.getVideoInputDevices()
+        .then((videoInputDevices) => {
+          const sourceSelect = document.getElementById('sourceSelect')
+          selectedDeviceId = videoInputDevices[0].deviceId
+          if (videoInputDevices.length >= 1) {
+            videoInputDevices.forEach((element) => {
+              const sourceOption = document.createElement('option')
+              sourceOption.text = element.label
+              sourceOption.value = element.deviceId
+              sourceSelect.appendChild(sourceOption)
+            })
+
+            sourceSelect.onchange = () => {
+              selectedDeviceId = sourceSelect.value;
+            };
+
+            const sourceSelectPanel = document.getElementById('sourceSelectPanel')
+            sourceSelectPanel.style.display = 'block'
+          }
+
+          document.getElementById('startButton').addEventListener('click', () => {
+
+            const decodingStyle = document.getElementById('decoding-style').value;
+
+            if (decodingStyle == "once") {
+              decodeOnce(codeReader, selectedDeviceId);
+            } else {
+              decodeContinuously(codeReader, selectedDeviceId);
+            }
+
+            console.log(`Started decode from camera with id ${selectedDeviceId}`)
           })
-      });
-      </script>
-    </div>
-  </div>
-</div>
-</center>
+
+          document.getElementById('resetButton').addEventListener('click', () => {
+            codeReader.reset()
+            document.getElementById('result').textContent = '';
+            console.log('Reset.')
+          })
+
+        })
+        .catch((err) => {
+          console.error(err)
+        })
+    })
+  </script>
+
 </body>
+
 </html>
