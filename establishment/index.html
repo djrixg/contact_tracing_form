@@ -1,0 +1,110 @@
+ <!DOCTYPE html>
+ <html>
+ <head>
+  <title>QR Contact Tracer</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <script src="js/jquery.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="js/removeBanner.js"></script>
+ </head>
+ <body>
+<div class="container">
+  <div class="row">
+      <div class="jumbotron col-md-12 col-xs-12 text-center">
+  <p>Please scan QR Code</p>
+    <main class="wrapper">
+      <section class="container">
+        <!-- <div>
+          <center>
+            <a class="button" id="startButton">Scan QR</a>
+            <a class="button" id="resetButton">Reset</a>
+          </center>
+        </div> -->
+        <div id="qr_output">
+          <video id="video" width="100%" height="250"></video>
+        </div>
+        <!-- <code id="result"></code> -->
+      </section>
+    </main>
+        <!-- <div style="visibility: hidden"> -->
+              <div id="sourceSelectPanel" style="display:none">
+                <label for="sourceSelect">Change video source:</label>
+                <select id="sourceSelect" style="max-width:400px">
+                </select>
+              </div>
+              <div style="display: table">
+                <label for="decoding-style"> Decoding Style:</label>
+                <select id="decoding-style" size="1">
+                  <option value="continuously">Decode continuously</option>
+                  <option value="once">Decode once</option>
+                </select>
+              </div>
+        <!-- </div> -->
+
+    <script type="text/javascript" src="js/qrscanner.js"></script>
+    <script type="text/javascript">
+
+      function copy_key() {
+        var copyText = document.getElementById("key");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999)
+        document.execCommand("copy");
+        alert("Secret key copied!");
+        // alert("Link copied!\n" + copyText.value);
+      }
+          if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+    console.log("enumerateDevices() not supported.");
+  }
+      function decodeOnce(codeReader, selectedDeviceId) {
+        codeReader.decodeFromInputVideoDevice(selectedDeviceId, 'video').then((result) => {
+          console.log(result)
+          document.getElementById('result').textContent = result.text//THIS IS THE RESULT!!!
+        }).catch((err) => {
+          console.error(err)
+          document.getElementById('result').textContent = err
+        })
+      }
+      function decodeContinuously(e, o) {
+      e.decodeFromInputVideoDeviceContinuously(o, "video", (e, o) => {
+          e && (redirect(e.text), document.getElementById("result").textContent = e.text)
+            , o && (o instanceof ZXing.NotFoundException && console.log("No QR code found."), o instanceof ZXing.ChecksumException && console.log("A code was found, but it's read value was not valid."), o instanceof ZXing.FormatException && console.log("A code was found, but it was in a invalid format.")
+          )
+      })
+      }
+      function redirect(tt){
+        console.log(tt);
+        alert(tt);
+      }
+      window.addEventListener("load", function() {
+          let e;var temp = 0;var android="";
+          const o = new ZXing.BrowserQRCodeReader;
+          console.log("ZXing code reader initialized"), o.getVideoInputDevices().then(t => {
+              const n = document.getElementById("sourceSelect");
+              if (e = t[0].deviceId, t.length >= 1) {
+                  t.forEach(e => {
+                      if(temp==1){
+                        android = e.deviceId;
+                      }
+                      const o = document.createElement("option");
+                      temp+=1;
+                      o.text = e.label, o.value = e.deviceId, n.appendChild(o)
+                  }), n.onchange = (() => {
+                      e = n.value
+                  }), document.getElementById("sourceSelectPanel").style.display = "block"
+              }
+              decodeContinuously(o, e), console.log(`Started decode from camera with id ${e}`)
+          }).catch(e => {
+              console.error(e)
+              // ,window.location.href='<?=$url?>secret.php?id=<?=$keyy?>';
+          })
+      });
+      </script>
+    </div>
+  </div>
+</div>
+</center>
+</body>
+</html>
