@@ -97,7 +97,7 @@
               sourceOption.value = element.deviceId
               sourceSelect.appendChild(sourceOption)
             })
-            if(getMobileOperatingSystem()!=unknown){
+            if(getMobileOperatingSystem()!="unknown"){
               selectedDeviceId = videoInputDevices[1].deviceId
             }
             sourceSelect.onchange = () => {
