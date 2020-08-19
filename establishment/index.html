@@ -5,7 +5,6 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="author" content="ZXing for JS">
 
   <title>Web QR Scanner</title>
 
@@ -68,26 +67,13 @@
           console.log('Found QR code!', result)
           document.getElementById('result').textContent = result.text
         }
-
         if (err) {
-          // As long as this error belongs into one of the following categories
-          // the code reader is going to continue as excepted. Any other error
-          // will stop the decoding loop.
-          //
-          // Excepted Exceptions:
-          //
-          //  - NotFoundException
-          //  - ChecksumException
-          //  - FormatException
-
           if (err instanceof ZXing.NotFoundException) {
             console.log('No QR code found.')
           }
-
           if (err instanceof ZXing.ChecksumException) {
             console.log('A code was found, but it\'s read value was not valid.')
           }
-
           if (err instanceof ZXing.FormatException) {
             console.log('A code was found, but it was in a invalid format.')
           }
@@ -97,8 +83,8 @@
 
     window.addEventListener('load', function () {
       let selectedDeviceId;
-      const codeReader = new ZXing.BrowserQRCodeReader()
-      console.log('ZXing code reader initialized')
+      const codeReader = new ZXing.BrowserQRCodeReader();
+      console.log('ZXing code reader initialized');
 
       codeReader.getVideoInputDevices()
         .then((videoInputDevices) => {
@@ -111,7 +97,6 @@
               sourceOption.value = element.deviceId
               sourceSelect.appendChild(sourceOption)
             })
-
             sourceSelect.onchange = () => {
               selectedDeviceId = sourceSelect.value;
             };
@@ -129,7 +114,6 @@
             } else {
               decodeContinuously(codeReader, selectedDeviceId);
             }
-
             console.log(`Started decode from camera with id ${selectedDeviceId}`)
           })
 
@@ -143,7 +127,26 @@
         .catch((err) => {
           console.error(err)
         })
-    })
+    });
+function getMobileOperatingSystem() {
+  var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    if (/windows phone/i.test(userAgent)) {
+        return "Windows Phone";
+    }
+    if (/android/i.test(userAgent)) {
+        return "Android";
+    }
+    if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+        return "iOS";
+    }
+    return "unknown";
+}
+// if (typeof(Storage) !== "undefined") {
+//   sessionStorage.setItem("temp_key", "Test");
+//   alert(sessionStorage.getItem("temp_key"));
+// } else {
+//   alert("Sorry, your browser does not support Web Storage...");
+// }
   </script>
 
 </body>
