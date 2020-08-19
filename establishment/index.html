@@ -91,15 +91,20 @@
           const sourceSelect = document.getElementById('sourceSelect')
           selectedDeviceId = videoInputDevices[0].deviceId
           if (videoInputDevices.length >= 1) {
+            var c = 0
             videoInputDevices.forEach((element) => {
               const sourceOption = document.createElement('option')
               sourceOption.text = element.label
               sourceOption.value = element.deviceId
+              if(c == 1){
+                if(getMobileOperatingSystem()!="unknown"){
+                  selectedDeviceId = videoInputDevices[1].deviceId
+                  sourceOption.selected = "selected";
+                }
+              }
               sourceSelect.appendChild(sourceOption)
+              c++;
             })
-            if(getMobileOperatingSystem()!="unknown"){
-              selectedDeviceId = videoInputDevices[1].deviceId
-            }
             sourceSelect.onchange = () => {
               selectedDeviceId = sourceSelect.value;
             };
