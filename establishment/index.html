@@ -21,9 +21,6 @@
 
 <body>
 <div class="container d-none mt-5" id="view_history">
-  <button class="btn btn-outline-primary float-right" onclick='$("#view_history").addClass("d-none");$("#input_data").removeClass("d-none");'>Back</button>
-  <button class="btn btn-outline-success float-right" id="export">Export</button>
-  <button class="btn btn-outline-danger float-right" onclick="clear_data()">Clear Data</button>
   <table class="table table-sm dataTable">
     <thead>
       <tr>
@@ -39,6 +36,13 @@
     <tbody id="history_list">
     </tbody>
   </table>
+  <footer class="footer">
+    <div class="container pr-5">
+      <button class="btn btn-outline-primary float-right" onclick='$("#view_history").addClass("d-none");$("#input_data").removeClass("d-none");'>Back</button>
+      <button class="btn btn-outline-success" id="export">Export</button>
+      <button class="btn btn-outline-danger" onclick="clear_data()">Clear Data</button>
+    </div>
+  </footer>
 </div>
 <div class="container" id="input_data">
 <div class="btn-group-vertical jumbotron col-sm-12" id="main_screen" role="group" aria-label="keypad">
@@ -72,7 +76,7 @@
   <label for="decoding-style">Scan Mode:</label>
   <select id="decoding-style" class="form-control" onchange="change_mode()" size="1">
     <option value="once">Single</option>
-    <option value="continuously">Continuous (Without temperature input)</option>
+    <option value="continuously">Continuous (Without temperature and DTI form input)</option>
   </select>
         <button type="button" class="btn btn-outline-secondary py-3" onclick="history()">History</button>
 </div>
@@ -135,6 +139,7 @@
       codeReader.decodeFromInputVideoDevice(selectedDeviceId, 'video').then((result) => {
         // document.getElementById('result').textContent = result.text
         process_result(result.text);
+        $("#modal").modal("hide");
         // alert(result);
       }).catch((err) => {
         console.error(err)
@@ -239,7 +244,7 @@ $('#modal').on('hidden.bs.modal', function () {
   if($('#decoding-style').val() == "once"){
     stop_scan();
   }else{
-    location.reload();
+    // location.reload();
   }
 })
 function change(ch){
@@ -289,34 +294,24 @@ function process_result(result){
     cancel();
     return false;
   }
-  // if("firstName" in result && "middleName" in result && "lastName" in result && "datetime" in result && "temperature" in result && "contactNumber" in result && "address" in result && "city" in result && "province" in result){
-    result["datetime"] = new Date().toLocaleString();
-    result["temperature"] = $("#temp").val();
-
-    db.transaction(function (tx) {
-      var sql = 'INSERT INTO ctracer (data) VALUES ("'+CryptoJS.AES.encrypt(JSON.stringify(result), sessionStorage.getItem("temp_key"))+'")';
-      tx.executeSql(sql, [], function (tx, results) {
-      // alert(tx+"----"+results);
-      $("#main_screen").prepend(`
-        <div class="alert alert-success alert-dismissible fade show" role="alert" style="position: absolute;left: 30%;top: 5vh;z-index: 1;">
-          `+result["firstName"]+" "+result["lastName"]+` added!
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>`);
-  });
-      // alert(JSON.stringify(result));
-      if($('#decoding-style').val() == "once"){
-        $("#modal").modal("hide");
-      }
+  save_data(result);
+}
+function save_data(result){
+  result["datetime"] = new Date().toLocaleString();
+  result["temperature"] = $("#temp").val();
+  db.transaction(function (tx) {
+    var sql = 'INSERT INTO ctracer (data) VALUES ("'+CryptoJS.AES.encrypt(JSON.stringify(result), sessionStorage.getItem("temp_key"))+'")';
+    tx.executeSql(sql, [], function (tx, results) {
+    // alert(tx+"----"+results);
+    $("#main_screen").prepend(`
+      <div class="alert alert-success alert-dismissible fade show" role="alert" style="position: absolute;left: 30%;top: 5vh;z-index: 1;">
+        `+result["firstName"]+" "+result["lastName"]+` added!
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>`);
     });
-  // }else{
-  //   alert("Please generate a proper QR Code from http://tinyurl.com/universal-contact-tracing");
-  // }
-  // var encrypted = CryptoJS.AES.encrypt(result, sessionStorage.getItem("temp_key"));
-  // var decryptedBytes = CryptoJS.AES.decrypt(encrypted, sessionStorage.getItem("temp_key")).toString(CryptoJS.enc.Utf8);
-  // alert(decryptedBytes);
-  // alert(result);
+  });
 }
 function clear_data(){
   db.transaction(function (tx) {
@@ -336,7 +331,12 @@ function clear_data(){
         }
       }
       if(flag && confirm("Press okay to clear table")){
-        alert("CLEAR TABLE");
+      db.transaction(function (tx) {
+        tx.executeSql('DROP TABLE ctracer', [], function (tx, results) {
+            history();
+            alert("Data has been deleted!");
+        });
+      });
       }
     });
   });
@@ -467,9 +467,12 @@ function prepCSVRow(arr, columnCount, initial) {
 }
   </script>
 <style type="text/css">
-  .table-fit {
-    width: 1px;
-}
+  .footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+  }
 /*
   .modal-dialog {
   width: 100%;
