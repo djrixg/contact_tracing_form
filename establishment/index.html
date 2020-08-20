@@ -22,7 +22,8 @@
 <body>
 <div class="container d-none" id="view_history">
   <button class="btn btn-outline-primary float-right" onclick='$("#view_history").addClass("d-none");$("#input_data").removeClass("d-none");'>Back</button>
-  <table class="table table-sm">
+  <button class="btn btn-outline-success float-right" id="export">export</button>
+  <table class="table table-sm table-fit dataTable">
     <thead>
       <tr>
         <th>Datetime</th>
@@ -39,7 +40,7 @@
   </table>
 </div>
 <div class="container" id="input_data">
-<div class="btn-group-vertical ml-4 mt-4" role="group" aria-label="keypad">
+<div class="btn-group-vertical jumbotron col-sm-12" id="main_screen" role="group" aria-label="keypad">
   <h3 class="h3">Enter Temperature: </h3>
     <div class="btn-group">
         <input class="text-center form-control mb-2" onkeyup="check($(this))" id="temp" autofocus>
@@ -69,8 +70,8 @@
     </div>
   <label for="decoding-style">Scan Mode:</label>
   <select id="decoding-style" class="form-control" onchange="change_mode()" size="1">
-    <option value="once">With Temperature</option>
-    <option value="continuously">Without Temperature</option>
+    <option value="once">Single</option>
+    <option value="continuously">Continuous (Without temperature input)</option>
   </select>
         <button type="button" class="btn btn-outline-secondary py-3" onclick="history()">History</button>
 </div>
@@ -93,7 +94,7 @@
               </div>
 
               <div>
-                <video id="video" width="300" height="200" style="border: 1px solid gray"></video>
+                <video id="video" width="100%" height="100%" style="border: 1px solid gray"></video>
               </div>
 
               <div id="sourceSelectPanel" style="display:none">
@@ -119,7 +120,7 @@
     var db = openDatabase('CTracer_DB', '1.0', 'Contact Tracing List', 2 * 1024 * 1024);
     db.transaction(function (tx) {
       // tx.executeSql('DROP TABLE ctracer');
-      tx.executeSql('CREATE TABLE IF NOT EXISTS ctracer (data);');
+      tx.executeSql('CREATE TABLE IF NOT EXISTS ctracer (id INTEGER PRIMARY KEY,data TEXT);');
       // tx.executeSql('INSERT INTO ctracer (data) VALUES ("'++'")');
       // tx.executeSql('SELECT * FROM ctracer', [], function (tx, results) {
       //   var len = results.rows.length, i;
@@ -221,6 +222,7 @@ function change_mode(){
   if(decodingStyle == "once"){
     location.reload();
   }else{
+    $("#temp").val("");
     scan_qr();
   }
 }
@@ -254,6 +256,12 @@ function change(ch){
     $('#temp').val($('#temp').val().slice(0, -1));
   }
 }
+
+$("#sourceSelect").change(function(){
+  stop_scan();
+  $("#modal").modal('hide');
+  setTimeout(function(){ scan_qr(); }, 500);
+});
 function check(val){
   if(isNaN(val.val())){
     alert("Enter numbers ONLY!");
@@ -265,18 +273,45 @@ function check(val){
     }
   });
 }
+function cancel(){
+      alert("Please generate a proper QR Code from http://tinyurl.com/universal-contact-tracing");
+      $("#modal").modal('hide');
+}
 function process_result(result){
-  result = JSON.parse(result);
-  result["datetime"] = new Date().toLocaleString();
-  result["temperature"] = $("#temp").val();
-  db.transaction(function (tx) {
-    var sql = 'INSERT INTO ctracer (data) VALUES ("'+CryptoJS.AES.encrypt(JSON.stringify(result), sessionStorage.getItem("temp_key"))+'")';
-    tx.executeSql(sql);
-    console.log(JSON.stringify(result));
-  });
-  if($('#decoding-style').val() == "once"){
-    $("#modal").modal("hide");
+  if(IsJsonString(result)){
+    result = JSON.parse(result);
+    if(!("firstName" in result)){
+      cancel();
+      return false;
+    }
+  }else{
+    cancel();
+    return false;
   }
+  // if("firstName" in result && "middleName" in result && "lastName" in result && "datetime" in result && "temperature" in result && "contactNumber" in result && "address" in result && "city" in result && "province" in result){
+    result["datetime"] = new Date().toLocaleString();
+    result["temperature"] = $("#temp").val();
+
+    db.transaction(function (tx) {
+      var sql = 'INSERT INTO ctracer (data) VALUES ("'+CryptoJS.AES.encrypt(JSON.stringify(result), sessionStorage.getItem("temp_key"))+'")';
+      tx.executeSql(sql, [], function (tx, results) {
+      // alert(tx+"----"+results);
+      $("#main_screen").prepend(`
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="position: absolute;left: 30%;top: 5vh;z-index: 1;">
+          `+result["firstName"]+" "+result["lastName"]+` added!
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>`);
+  });
+      // alert(JSON.stringify(result));
+      if($('#decoding-style').val() == "once"){
+        $("#modal").modal("hide");
+      }
+    });
+  // }else{
+  //   alert("Please generate a proper QR Code from http://tinyurl.com/universal-contact-tracing");
+  // }
   // var encrypted = CryptoJS.AES.encrypt(result, sessionStorage.getItem("temp_key"));
   // var decryptedBytes = CryptoJS.AES.decrypt(encrypted, sessionStorage.getItem("temp_key")).toString(CryptoJS.enc.Utf8);
   // alert(decryptedBytes);
@@ -289,20 +324,35 @@ function history(){
       var len = results.rows.length, i;
       $("#view_history").removeClass("d-none");
       $("#input_data").addClass("d-none");
-      for (i = 0; i < len; i++) {
-        var data = CryptoJS.AES.decrypt(results.rows[i]["data"], sessionStorage.getItem("temp_key")).toString(CryptoJS.enc.Utf8);
-        data = JSON.parse(data);
-        if(data["temperature"]!=""){data["temperature"] += "°C"}
-        var temp = `<tr>
-                    <td>`+data["datetime"]+`</td>
-                    <td>`+data["firstName"]+" "+data["middleName"]+" "+data["lastName"]+`</td>
-                    <td>`+data["temperature"]+`</td>
-                    <td>`+data["contactNumber"]+`</td>
-                    <td>`+data["address"]+`</td>
-                    <td>`+data["city"]+`</td>
-                    <td>`+data["province"]+`</td>
-                  </tr>`;
-        $("#history_list").append(temp);
+      var data = null;
+      var flag = false
+      if(len!=0){
+        try {
+          data = CryptoJS.AES.decrypt(results.rows[0]["data"], sessionStorage.getItem("temp_key"));
+          data = data.toString(CryptoJS.enc.Utf8);
+          flag=true;
+        }
+        catch(err) {
+          alert("You provided the wrong encryption key");
+        }
+      }
+      if(flag){
+        for (i = 0; i < len; i++) {
+          data = CryptoJS.AES.decrypt(results.rows[i]["data"], sessionStorage.getItem("temp_key"));
+          data = data.toString(CryptoJS.enc.Utf8);
+          data = JSON.parse(data);
+          if(data["temperature"]!=""){data["temperature"] += "°C"}
+          var temp = `<tr>
+                      <td>`+data["datetime"].replace(',','<br>')+`</td>
+                      <td>`+data["firstName"]+" "+data["middleName"]+" "+data["lastName"]+`</td>
+                      <td>`+data["temperature"]+`</td>
+                      <td>`+data["contactNumber"]+`</td>
+                      <td>`+data["address"]+`</td>
+                      <td>`+data["city"]+`</td>
+                      <td>`+data["province"]+`</td>
+                    </tr>`;
+          $("#history_list").append(temp);
+        }
       }
       $("#history_modal").modal("show");
     });
@@ -331,8 +381,66 @@ function history(){
     } else {
       alert("Sorry, your browser does not support Web Storage...");
     }
+    function IsJsonString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+$('#export').click(function() {
+  var titles = [];
+  var data = [];
+  $('.dataTable th').each(function() {
+    titles.push($(this).text());
+  });
+  $('.dataTable td').each(function() {
+    data.push($(this).text());
+  });
+  var CSVString = prepCSVRow(titles, titles.length, '');
+  CSVString = prepCSVRow(data, titles.length, CSVString);
+  var downloadLink = document.createElement("a");
+  var blob = new Blob(["\ufeff", CSVString]);
+  var url = URL.createObjectURL(blob);
+  downloadLink.href = url;
+  downloadLink.download = "contact_tracing.csv";
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+});
+function prepCSVRow(arr, columnCount, initial) {
+  var row = ''; // this will hold data
+  var delimeter = ','; // data slice separator, in excel it's `;`, in usual CSv it's `,`
+  var newLine = '\r\n'; // newline separator for CSV row
+  function splitArray(_arr, _count) {
+    var splitted = [];
+    var result = [];
+    _arr.forEach(function(item, idx) {
+      if ((idx + 1) % _count === 0) {
+        splitted.push(item);
+        result.push(splitted);
+        splitted = [];
+      } else {
+        splitted.push(item);
+      }
+    });
+    return result;
+  }
+  var plainArr = splitArray(arr, columnCount);
+  plainArr.forEach(function(arrItem) {
+    arrItem.forEach(function(item, idx) {
+      row += item + ((idx + 1) === arrItem.length ? '' : delimeter);
+    });
+    row += newLine;
+  });
+  return initial + row;
+}
   </script>
 <style type="text/css">
+  .table-fit {
+    width: 1px;
+}
 /*
   .modal-dialog {
   width: 100%;
