@@ -31,6 +31,7 @@
         <th>Address</th>
         <th>City</th>
         <th>Province</th>
+        <th>Questions</th>
       </tr>
     </thead>
     <tbody id="history_list">
@@ -78,7 +79,7 @@
     <option value="once">Single</option>
     <option value="continuously">Continuous (Without temperature and DTI form input)</option>
   </select>
-        <button type="button" class="btn btn-outline-secondary py-3" onclick="history()">History</button>
+  <button type="button" class="btn btn-outline-secondary py-3" onclick="history()">History</button>
 </div>
   <!-- <button class="btn btn-primary" onclick="scan_qr()">Scan QR</button> -->
 </div>
@@ -117,30 +118,90 @@
       </div>
     </div>
   </div>
-
+</div>
+<div class="modal fade" id="dti" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalLabel">DTI Form</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="modal_body">
+        <table class="table table-sm table-bordered">
+          <tr>
+            <th></th>
+            <th>Yes</th>
+            <th>No</th>
+          </tr>
+          <tr>
+            <td>Are you experiencing:<br><span class="float-right">a. Sore throat</span></td>
+            <td><label for="q1y"><input type="radio" name="q1" id="q1y" value="1"></label></td>
+            <td><label for="q1n"><input type="radio" name="q1" id="q1n" value="0" checked></label></td>
+          </tr>
+          <tr>
+            <td><span class="float-right">b. Body Pains</span></td>
+            <td><label for="q2y"><input type="radio" name="q2" id="q2y" value="1"></label></td>
+            <td><label for="q2n"><input type="radio" name="q2" id="q2n" value="0" checked></label></td>
+          </tr>
+          <tr>
+            <td><span class="float-right">a. Headache</span></td>
+            <td><label for="q3y"><input type="radio" name="q3" id="q3y" value="1"></label></td>
+            <td><label for="q3n"><input type="radio" name="q3" id="q3n" value="0" checked></label></td>
+          </tr>
+          <tr>
+            <td><span class="float-right">a. Fever</span></td>
+            <td><label for="q4y"><input type="radio" name="q4" id="q4y" value="1"></label></td>
+            <td><label for="q4n"><input type="radio" name="q4" id="q4n" value="0" checked></label></td>
+          </tr>
+          <tr>
+            <td>Have you worked together or stayed in the same close environment of a confirmed COVID19 case?</td>
+            <td><label for="q5y"><input type="radio" name="q5" id="q5y" value="1"></label></td>
+            <td><label for="q5n"><input type="radio" name="q5" id="q5n" value="0" checked></label></td>
+          </tr>
+          <tr>
+            <td>Have you had any contact with anyone with fever, cough, colds, and sore throat in the past 2 weeks?</td>
+            <td><label for="q6y"><input type="radio" name="q6" id="q6y" value="1"></label></td>
+            <td><label for="q6n"><input type="radio" name="q6" id="q6n" value="0" checked></label></td>
+          </tr>
+          <tr>
+            <td>Have you travelled outside of the Philippines in the last 14 days?</td>
+            <td><label for="q7y"><input type="radio" name="q7" id="q7y" value="1"></label></td>
+            <td><label for="q7n"><input type="radio" name="q7" id="q7n" value="0" checked></label></td>
+          </tr>
+          <tr>
+            <td>Have you travelled to any area in NCR or Metro Manila aside from your home?</td>
+            <td><label for="q8y"><input type="radio" name="q8" id="q8y" value="1"></label></td>
+            <td><label for="q8n"><input type="radio" name="q8" id="q8n" value="0" checked></label></td>
+          </tr>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <!-- <button onclick="set_default_answers()" class="btn btn-outline-secondary float-left">Reset</button> -->
+        <button type="button" class="btn btn-primary" onclick="get_answers()">submit</button>
+      </div>
+    </div>
+  </div>
 </div>
   <script type="text/javascript" src="js/qrscanner.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js" integrity="sha256-/H4YS+7aYb9kJ5OKhFYPUjSJdrtV6AeyJOtTkw6X72o=" crossorigin="anonymous"></script>
   <script type="text/javascript">
     var db = openDatabase('CTracer_DB', '1.0', 'Contact Tracing List', 2 * 1024 * 1024);
     db.transaction(function (tx) {
-      // tx.executeSql('DROP TABLE ctracer');
       tx.executeSql('CREATE TABLE IF NOT EXISTS ctracer (id INTEGER PRIMARY KEY,data TEXT);');
-      // tx.executeSql('INSERT INTO ctracer (data) VALUES ("'++'")');
-      // tx.executeSql('SELECT * FROM ctracer', [], function (tx, results) {
-      //   var len = results.rows.length, i;
-      //   for (i = 0; i < len; i++) {
-      //     console.log(results.rows.item(i).text);
-      //   }
-      // });
     });
 
     function decodeOnce(codeReader, selectedDeviceId) {
       codeReader.decodeFromInputVideoDevice(selectedDeviceId, 'video').then((result) => {
         // document.getElementById('result').textContent = result.text
-        process_result(result.text);
-        $("#modal").modal("hide");
+        set_default_answers();
+        process_result(result.text,true);
+        //ADD DTI FORM HERE
         // alert(result);
+        // $("#modal").modal("hide");
+        // $("#dti").modal("show");
       }).catch((err) => {
         console.error(err)
         // document.getElementById('result').textContent = err
@@ -223,6 +284,17 @@ function start_scan(){
       decodeContinuously(codeReader, selectedDeviceId);
     }
 }
+function get_answers(){
+  var temp = [];
+  for (var i = 1; i < 9; i++) {
+    if($("input[name='q"+parseInt(i)+"']:checked").val()=="1"){
+      temp["q"+parseInt(i)] = parseInt($("input[name='q"+parseInt(i)+"']:checked").val());
+    }
+  }
+  temp_result_storage["dti"]=temp;
+  console.log(temp_result_storage)
+  save_data(temp_result_storage);
+}
 function change_mode(){
   const decodingStyle = $('#decoding-style').val();
   if(decodingStyle == "once"){
@@ -245,8 +317,14 @@ $('#modal').on('hidden.bs.modal', function () {
     stop_scan();
   }else{
     // location.reload();
+    stop_scan();
   }
 })
+function set_default_answers(){
+  for (var i = 8; i > 0; i--) {
+    $("#q"+parseInt(i)+"n").trigger("click");
+  }
+}
 function change(ch){
   if(ch!=null){
     if(ch=="."){
@@ -283,7 +361,8 @@ function cancel(){
       alert("Please generate a proper QR Code from http://tinyurl.com/universal-contact-tracing");
       $("#modal").modal('hide');
 }
-function process_result(result){
+var temp_result_storage=null;
+function process_result(result,solo=false){
   if(IsJsonString(result)){
     result = JSON.parse(result);
     if(!("firstName" in result)){
@@ -294,7 +373,14 @@ function process_result(result){
     cancel();
     return false;
   }
-  save_data(result);
+  if(!solo){
+    save_data(result);
+  }else{
+    // alert("SOLO");
+    temp_result_storage = result;
+    $("#modal").modal("hide");
+    $("#dti").modal("show");
+  }
 }
 function save_data(result){
   result["datetime"] = new Date().toLocaleString();
@@ -303,8 +389,7 @@ function save_data(result){
     var sql = 'INSERT INTO ctracer (data) VALUES ("'+CryptoJS.AES.encrypt(JSON.stringify(result), sessionStorage.getItem("temp_key"))+'")';
     tx.executeSql(sql, [], function (tx, results) {
     // alert(tx+"----"+results);
-    $("#main_screen").prepend(`
-      <div class="alert alert-success alert-dismissible fade show" role="alert" style="position: absolute;left: 30%;top: 5vh;z-index: 1;">
+    $("#main_screen").prepend(`<div class="alert alert-success alert-dismissible fade show" role="alert" style="position: absolute;left: 30%;top: 5vh;z-index: 1;">
         `+result["firstName"]+" "+result["lastName"]+` added!
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
           <span aria-hidden="true">&times;</span>
@@ -333,8 +418,8 @@ function clear_data(){
       if(flag && confirm("Press okay to clear table")){
       db.transaction(function (tx) {
         tx.executeSql('DROP TABLE ctracer', [], function (tx, results) {
-            history();
             alert("Data has been deleted!");
+            location.reload();
         });
       });
       }
@@ -376,6 +461,7 @@ function history(){
                       <td>`+data["address"]+`</td>
                       <td>`+data["city"]+`</td>
                       <td>`+data["province"]+`</td>
+                      <td>`+JSON.stringify(data["dti"])+`</td>
                     </tr>`;
           $("#history_list").append(temp);
         }
@@ -399,24 +485,25 @@ function get_key(){
   // var decryptedBytes = CryptoJS.AES.decrypt(encrypted, sessionStorage.getItem("temp_key")).toString(CryptoJS.enc.Utf8);
   // alert(decryptedBytes);
 
-    if (typeof(Storage) !== "undefined") {
-      if(sessionStorage.getItem("temp_key")==null){
-        get_key();
-      }
-      // sessionStorage.setItem("temp_key", "Test");
-      // if(sessionStorage.getItem("temp_key")!=null){
-      //   alert(sessionStorage.getItem("temp_key"));
-      // }
-    } else {
-      alert("Sorry, your browser does not support Web Storage...");
-    }
-    function IsJsonString(str) {
-    try {
-        JSON.parse(str);
-    } catch (e) {
-        return false;
-    }
-    return true;
+if (typeof(Storage) !== "undefined") {
+  if(sessionStorage.getItem("temp_key")==null){
+    get_key();
+    history();
+  }
+  // sessionStorage.setItem("temp_key", "Test");
+  // if(sessionStorage.getItem("temp_key")!=null){
+  //   alert(sessionStorage.getItem("temp_key"));
+  // }
+} else {
+  alert("Sorry, your browser does not support Web Storage...");
+}
+function IsJsonString(str) {
+  try {
+      JSON.parse(str);
+  } catch (e) {
+      return false;
+  }
+  return true;
 }
 $('#export').click(function() {
   var titles = [];
@@ -473,6 +560,11 @@ function prepCSVRow(arr, columnCount, initial) {
     width: 100%;
     height: 60px;
   }
+  label {
+    cursor: pointer;
+    display: block;
+    text-align: center;
+}
 /*
   .modal-dialog {
   width: 100%;
