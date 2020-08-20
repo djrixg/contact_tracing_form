@@ -476,7 +476,7 @@ function history(){
                       <td>`+data["address"]+`</td>
                       <td>`+data["city"]+`</td>
                       <td>`+data["province"]+`</td>
-                      <td><button class="btn btn-sm btn-outline-primary" onclick="interpret_answers('`+qq+`')">View</button></td>
+                      <td><button class="btn btn-sm btn-outline-primary" onclick="interpret_answers('`+qq+`')"><small>`+(JSON.stringify(qq)).replace(",","-")+`</small></button><br></td>
                     </tr>`;
           $("#history_list").append(temp);
         }
