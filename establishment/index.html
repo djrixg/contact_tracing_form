@@ -20,10 +20,11 @@
 </head>
 
 <body>
-<div class="container d-none" id="view_history">
+<div class="container d-none mt-5" id="view_history">
   <button class="btn btn-outline-primary float-right" onclick='$("#view_history").addClass("d-none");$("#input_data").removeClass("d-none");'>Back</button>
-  <button class="btn btn-outline-success float-right" id="export">export</button>
-  <table class="table table-sm table-fit dataTable">
+  <button class="btn btn-outline-success float-right" id="export">Export</button>
+  <button class="btn btn-outline-danger float-right" onclick="clear_data()">Clear Data</button>
+  <table class="table table-sm dataTable">
     <thead>
       <tr>
         <th>Datetime</th>
@@ -317,6 +318,29 @@ function process_result(result){
   // alert(decryptedBytes);
   // alert(result);
 }
+function clear_data(){
+  db.transaction(function (tx) {
+    tx.executeSql('SELECT * FROM ctracer', [], function (tx, results) {
+      var len = results.rows.length, i;
+      var data = null;
+      var flag = false
+      if(len!=0){
+        try {
+          data = CryptoJS.AES.decrypt(results.rows[0]["data"], sessionStorage.getItem("temp_key"));
+          data = data.toString(CryptoJS.enc.Utf8);
+          flag=true;
+        }
+        catch(err) {
+          alert("You provided the wrong encryption key!");
+          get_key();
+        }
+      }
+      if(flag && confirm("Press okay to clear table")){
+        alert("CLEAR TABLE");
+      }
+    });
+  });
+}
 function history(){
   db.transaction(function (tx) {
     tx.executeSql('SELECT * FROM ctracer', [], function (tx, results) {
@@ -334,6 +358,8 @@ function history(){
         }
         catch(err) {
           alert("You provided the wrong encryption key");
+          get_key();
+          history();
         }
       }
       if(flag){
@@ -358,21 +384,24 @@ function history(){
     });
   });
 }
+function get_key(){
+  var key = "";
+  while(key==""){
+    key = prompt("You need to enter an encryption key to secure the data collected through this app to avoid hacking. Please backup the encryption key as this will be required everytime you access the saved data.Copy the typed key before pressing okay.\n\nEnter encryption key:");
+    if(key == null){
+      key="";
+    }
+  }
+  sessionStorage.setItem("temp_key", key);
+  alert("Without this key, you will never access the data collected from this device ever again. Please make sure to backup this key.\n\nEntered key: "+key);
+}
     // var encrypted = CryptoJS.AES.encrypt(result, sessionStorage.getItem("temp_key"));
   // var decryptedBytes = CryptoJS.AES.decrypt(encrypted, sessionStorage.getItem("temp_key")).toString(CryptoJS.enc.Utf8);
   // alert(decryptedBytes);
 
     if (typeof(Storage) !== "undefined") {
       if(sessionStorage.getItem("temp_key")==null){
-        var key = "";
-        while(key==""){
-          key = prompt("You need to enter an encryption key to secure the data collected through this app to avoid hacking. Please backup the encryption key as this will be required everytime you access the saved data.Copy the typed key before pressing okay.\n\nEnter encryption key:");
-          if(key == null){
-            key="";
-          }
-        }
-        sessionStorage.setItem("temp_key", key);
-        alert("Without this key, you will never access the data collected from this device ever again. Please make sure to backup this key.\n\nEntered key: "+key);
+        get_key();
       }
       // sessionStorage.setItem("temp_key", "Test");
       // if(sessionStorage.getItem("temp_key")!=null){
