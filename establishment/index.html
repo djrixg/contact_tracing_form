@@ -189,6 +189,31 @@
   <script type="text/javascript" src="js/qrscanner.js"></script>
   <script src="js/aes.js"></script>
   <script type="text/javascript">
+
+const cipher = salt => {
+    const textToChars = text => text.split('').map(c => c.charCodeAt(0));
+    const byteHex = n => ("0" + Number(n).toString(16)).substr(-2);
+    const applySaltToChar = code => textToChars(salt).reduce((a,b) => a ^ b, code);
+
+    return text => text.split('')
+        .map(textToChars)
+        .map(applySaltToChar)
+        .map(byteHex)
+        .join('');
+}
+
+const decipher = salt => {
+    const textToChars = text => text.split('').map(c => c.charCodeAt(0));
+    const applySaltToChar = code => textToChars(salt).reduce((a,b) => a ^ b, code);
+    return encoded => encoded.match(/.{1,2}/g)
+        .map(hex => parseInt(hex, 16))
+        .map(applySaltToChar)
+        .map(charCode => String.fromCharCode(charCode))
+        .join('');
+}
+// const myCipher = cipher('mySecretSalt');
+// const myDecipher = decipher('mySecretSalt');
+// alert(myDecipher(myCipher('the secret string')));
     var db = openDatabase('CTracer_DB', '1.0', 'Contact Tracing List', 2 * 1024 * 1024);
     db.transaction(function (tx) {
       tx.executeSql('CREATE TABLE IF NOT EXISTS ctracer (id INTEGER PRIMARY KEY,data TEXT);');
@@ -214,7 +239,7 @@
         if (result) {
           // document.getElementById('result').textContent = result.text
           process_result(result.text);
-          alert(result.text);
+          // alert(result.text);
         }
       })
     }
@@ -294,7 +319,7 @@ function get_answers(){
   }
   temp_result_storage["dti"]=temp;
   // temp_result_storage["dti"]=JSON.stringify(temp);
-  // console.log(temp_result_storage);
+  console.log(temp_result_storage);
   save_data(temp_result_storage);
 }
 function change_mode(){
@@ -315,6 +340,7 @@ function scan_qr(){
   $("#modal").modal("show");
 }
 $('#modal').on('hidden.bs.modal', function () {
+  set_default_answers();
   $("#dti_submit").removeClass("d-none");
   if($('#decoding-style').val() == "once"){
     stop_scan();
@@ -389,10 +415,11 @@ function save_data(result){
   result["datetime"] = new Date().toLocaleString();
   result["temperature"] = $("#temp").val();
   db.transaction(function (tx) {
-    const myCipher = cipher(sessionStorage.getItem("temp_key"));
+    const myCipher = cipher('temp');
     var sql = 'INSERT INTO ctracer (data) VALUES ("'+myCipher(JSON.stringify(result))+'")';
+    // console.log(sql);
     tx.executeSql(sql, [], function (tx, results) {
-    $("#main_screen").prepend(`<div class="alert alert-success alert-dismissible fade show" role="alert" style="position: absolute;left: 30%;top: 5vh;z-index: 1;">
+    $("#main_screen").prepend(`<div class="alert alert-success alert-dismissible fade show" role="alert" style="position: absolute;left: 28%;top: 4vh;z-index: 1;">
         `+result["firstName"]+" "+result["lastName"]+` added!
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
           <span aria-hidden="true">&times;</span>
@@ -405,23 +432,9 @@ function save_data(result){
   });
 }
 function clear_data(){
-  db.transaction(function (tx) {
-    tx.executeSql('SELECT * FROM ctracer', [], function (tx, results) {
-      var len = results.rows.length, i;
-      var data = null;
-      var flag = false
-      if(len!=0){
-        try {
-    const myDecipher = decipher(sessionStorage.getItem("temp_key"));
-    data = myDecipher(results.rows[0]["data"]);
-          flag=true;
-        }
-        catch(err) {
-          alert("You provided the wrong encryption key!");
-          get_key();
-        }
-      }
-      if(flag && confirm("Press okay to clear table")){
+  // db.transaction(function (tx) {
+  //   tx.executeSql('SELECT * FROM ctracer', [], function (tx, results) {
+      if(confirm("Press okay to clear table")){
       db.transaction(function (tx) {
         tx.executeSql('DROP TABLE ctracer', [], function (tx, results) {
             alert("Data has been deleted!");
@@ -429,8 +442,8 @@ function clear_data(){
         });
       });
       }
-    });
-  });
+  //   });
+  // });
 }
 function interpret_answers(results){
   results = results.split(",");
@@ -449,71 +462,53 @@ function history(){
       var len = results.rows.length, i;
       $("#view_history").removeClass("d-none");
       $("#input_data").addClass("d-none");
-      var data = null;
-      var flag = false
-      if(len!=0){
-        try {
-    const myDecipher = decipher(sessionStorage.getItem("temp_key"));
-    data = myDecipher(results.rows[0]["data"]);
-          flag=true;
-        }
-        catch(err) {
-          alert("You provided the wrong encryption key");
-          get_key();
-          history();
-        }
-      }
-      if(flag){
-        for (i = 0; i < len; i++) {
-    const myDecipher = decipher(sessionStorage.getItem("temp_key"));
-    data = myDecipher(results.rows[i]["data"]);
-          data = JSON.parse(data);
-          var qq = Object.keys(data["dti"]);
-          if(data["temperature"]!=""){data["temperature"] += "°C"}
-          var temp = `<tr>
-                      <td>`+data["datetime"].replace(',','<br>')+`</td>
-                      <td>`+data["firstName"]+" "+data["middleName"]+" "+data["lastName"]+`</td>
-                      <td>`+data["temperature"]+`</td>
-                      <td>`+data["contactNumber"]+`</td>
-                      <td>`+data["address"]+`</td>
-                      <td>`+data["city"]+`</td>
-                      <td>`+data["province"]+`</td>
-                      <td><button class="btn btn-sm btn-outline-primary" onclick="interpret_answers('`+qq+`')"><small>`+(JSON.stringify(qq)).replace(",","-")+`</small></button><br></td>
-                    </tr>`;
-          $("#history_list").append(temp);
-        }
+      for (i = 0; i < len; i++) {
+        const myDecipher = decipher('temp');
+        data = myDecipher(results.rows[i]["data"]);
+        data = JSON.parse(data);
+        var qq = Object.keys(data["dti"]);
+        if(data["temperature"]!=""){data["temperature"] += "°C"}
+        var temp = `<tr>
+                    <td>`+data["datetime"].replace(',','<br>')+`</td>
+                    <td>`+data["firstName"]+" "+data["middleName"]+" "+data["lastName"]+`</td>
+                    <td>`+data["temperature"]+`</td>
+                    <td>`+data["contactNumber"]+`</td>
+                    <td>`+data["address"]+`</td>
+                    <td>`+data["city"]+`</td>
+                    <td>`+data["province"]+`</td>
+                    <td><button class="btn btn-sm btn-outline-primary" onclick="interpret_answers('`+qq+`')"><small>`+(JSON.stringify(qq))+`</small></button><br></td>
+                  </tr>`;
+        $("#history_list").append(temp);
       }
       $("#history_modal").modal("show");
     });
   });
 }
-function get_key(){
-  var key = "";
-  while(key==""){
-    key = prompt("You need to enter an encryption key to secure the data collected through this app to avoid hacking. Please backup the encryption key as this will be required everytime you access the saved data.Copy the typed key before pressing okay.\n\nEnter encryption key:");
-    if(key == null){
-      key="";
-    }
-  }
-  sessionStorage.setItem("temp_key", key);
-  alert("Without this key, you will never access the data collected from this device ever again. Please make sure to backup this key.\n\nEntered key: "+key);
-}
-    // var encrypted = CryptoJS.AES.encrypt(result, sessionStorage.getItem("temp_key"));
-  // var decryptedBytes = CryptoJS.AES.decrypt(encrypted, sessionStorage.getItem("temp_key")).toString(CryptoJS.enc.Utf8);
-  // alert(decryptedBytes);
+// function get_key(){
+//   var key = "";
+//   while(key==""){
+//     key = prompt("You need to enter an encryption key to secure the data collected through this app to avoid hacking. Please backup the encryption key as this will be required everytime you access the saved data.Copy the typed key before pressing okay.\n\nEnter encryption key:");
+//     if(key == null){
+//       key="";
+//     }
+//   }
+//   sessionStorage.setItem("temp_key", key);
+//   alert("Without this key, you will never access the data collected from this device ever again. Please make sure to backup this key.\n\nEntered key: "+key);
+// }
 
-if (typeof(Storage) !== "undefined") {
-  if(sessionStorage.getItem("temp_key")==null){
-    get_key();
-    history();
-  }
-  // sessionStorage.setItem("temp_key", "Test");
-  // if(sessionStorage.getItem("temp_key")!=null){
-  //   alert(sessionStorage.getItem("temp_key"));
-  // }
-} else {
-  alert("Sorry, your browser does not support Web Storage...");
-}
+
+// if (typeof(Storage) !== "undefined") {
+//   if(sessionStorage.getItem("temp_key")==null){
+//     get_key();
+//     history();
+//   }
+//   // sessionStorage.setItem("temp_key", "Test");
+//   // if(sessionStorage.getItem("temp_key")!=null){
+//   //   alert(sessionStorage.getItem("temp_key"));
+//   // }
+// } else {
+//   alert("Sorry, your browser does not support Web Storage...");
+// }
 function IsJsonString(str) {
   try {
       JSON.parse(str);
@@ -568,27 +563,6 @@ function prepCSVRow(arr, columnCount, initial) {
     row += newLine;
   });
   return initial + row;
-}
-const cipher = salt => {
-    const textToChars = text => text.split('').map(c => c.charCodeAt(0));
-    const byteHex = n => ("0" + Number(n).toString(16)).substr(-2);
-    const applySaltToChar = code => textToChars(salt).reduce((a,b) => a ^ b, code);
-
-    return text => text.split('')
-        .map(textToChars)
-        .map(applySaltToChar)
-        .map(byteHex)
-        .join('');
-}
-
-const decipher = salt => {
-    const textToChars = text => text.split('').map(c => c.charCodeAt(0));
-    const applySaltToChar = code => textToChars(salt).reduce((a,b) => a ^ b, code);
-    return encoded => encoded.match(/.{1,2}/g)
-        .map(hex => parseInt(hex, 16))
-        .map(applySaltToChar)
-        .map(charCode => String.fromCharCode(charCode))
-        .join('');
 }
   </script>
 <style type="text/css">
