@@ -1,10 +1,10 @@
 {
-	"name": "Contact Tracing QR Generator",
-	"short_name": "CTracer QR",
+	"name": "Establishment CTracer",
+	"short_name": "ECTracer",
 	"start_url":".",
 	"display":"standalone",
 	"background_color":"#fff",
-	"description":"A QR code generator for contact tracing purposes",
+	"description":"A QR code scanner for contact tracing purposes for establishments",
 	"icons":[{
 		"src":"edit.png",
 		"sizes":"256x256",
