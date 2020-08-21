@@ -307,8 +307,8 @@ $('#modal').on('hidden.bs.modal', function () {
   if($('#decoding-style').val() == "once"){
     stop_scan();
   }else{
-    // location.reload();
-    stop_scan();
+    location.reload();
+    // stop_scan();
   }
 });
 function change(ch){
