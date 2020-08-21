@@ -476,10 +476,12 @@ function set_default_answers(result=null){
 }
 function interpret_answers(results){
   set_default_answers();
-  results = results.split(",");
-  $.each( results, function( i,v ){
-    $("input[name="+v+"][value=1]").attr('checked', 'checked');
-  });
+  if(results!=""){
+    results = results.split(",");
+    $.each( results, function( i,v ){
+      $("input[name="+v+"][value=1]").attr('checked', 'checked');
+    });
+  }
   $("#dti_submit").addClass("d-none");
   $("#dti").modal("show");
 }
