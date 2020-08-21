@@ -129,54 +129,7 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body" id="modal_body">
-        <table class="table table-sm table-bordered">
-          <tr>
-            <th></th>
-            <th>Yes</th>
-            <th>No</th>
-          </tr>
-          <tr>
-            <td>Are you experiencing:<br><span class="float-right">a. Sore throat</span></td>
-            <td><label for="q1y"><input type="radio" name="q1" id="q1y" value="1"></label></td>
-            <td><label for="q1n"><input type="radio" name="q1" id="q1n" value="0" checked></label></td>
-          </tr>
-          <tr>
-            <td><span class="float-right">b. Body Pains</span></td>
-            <td><label for="q2y"><input type="radio" name="q2" id="q2y" value="1"></label></td>
-            <td><label for="q2n"><input type="radio" name="q2" id="q2n" value="0" checked></label></td>
-          </tr>
-          <tr>
-            <td><span class="float-right">a. Headache</span></td>
-            <td><label for="q3y"><input type="radio" name="q3" id="q3y" value="1"></label></td>
-            <td><label for="q3n"><input type="radio" name="q3" id="q3n" value="0" checked></label></td>
-          </tr>
-          <tr>
-            <td><span class="float-right">a. Fever</span></td>
-            <td><label for="q4y"><input type="radio" name="q4" id="q4y" value="1"></label></td>
-            <td><label for="q4n"><input type="radio" name="q4" id="q4n" value="0" checked></label></td>
-          </tr>
-          <tr>
-            <td>Have you worked together or stayed in the same close environment of a confirmed COVID19 case?</td>
-            <td><label for="q5y"><input type="radio" name="q5" id="q5y" value="1"></label></td>
-            <td><label for="q5n"><input type="radio" name="q5" id="q5n" value="0" checked></label></td>
-          </tr>
-          <tr>
-            <td>Have you had any contact with anyone with fever, cough, colds, and sore throat in the past 2 weeks?</td>
-            <td><label for="q6y"><input type="radio" name="q6" id="q6y" value="1"></label></td>
-            <td><label for="q6n"><input type="radio" name="q6" id="q6n" value="0" checked></label></td>
-          </tr>
-          <tr>
-            <td>Have you travelled outside of the Philippines in the last 14 days?</td>
-            <td><label for="q7y"><input type="radio" name="q7" id="q7y" value="1"></label></td>
-            <td><label for="q7n"><input type="radio" name="q7" id="q7n" value="0" checked></label></td>
-          </tr>
-          <tr>
-            <td>Have you travelled to any area in NCR or Metro Manila aside from your home?</td>
-            <td><label for="q8y"><input type="radio" name="q8" id="q8y" value="1"></label></td>
-            <td><label for="q8n"><input type="radio" name="q8" id="q8n" value="0" checked></label></td>
-          </tr>
-        </table>
+      <div class="modal-body" id="dti_modal_body">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -348,12 +301,7 @@ $('#modal').on('hidden.bs.modal', function () {
     // location.reload();
     stop_scan();
   }
-})
-function set_default_answers(){
-  for (var i = 8; i > 0; i--) {
-    $("#q"+parseInt(i)+"n").trigger("click");
-  }
-}
+});
 function change(ch){
   if(ch!=null){
     if(ch=="."){
@@ -407,6 +355,7 @@ function process_result(result,solo=false){
   }else{
     // alert("SOLO");
     temp_result_storage = result;
+    set_default_answers();
     $("#modal").modal("hide");
     $("#dti").modal("show");
   }
@@ -445,12 +394,63 @@ function clear_data(){
   //   });
   // });
 }
+function set_default_answers(){
+  // for (var i = 8; i > 0; i--) {
+  //   $("input[name=q"+i.toString()+"][value=0]").attr('checked', 'checked');
+  // }
+  $("#dti_modal_body").html(`<table class="table table-sm table-bordered">
+          <tr>
+            <th></th>
+            <th>Yes</th>
+            <th>No</th>
+          </tr>
+          <tr>
+            <td>Are you experiencing:<br><span class="float-right">a. Sore throat</span></td>
+            <td><label for="q1y"><input type="radio" name="q1" id="q1y" value="1"></label></td>
+            <td><label for="q1n"><input type="radio" name="q1" id="q1n" value="0" checked></label></td>
+          </tr>
+          <tr>
+            <td><span class="float-right">b. Body Pains</span></td>
+            <td><label for="q2y"><input type="radio" name="q2" id="q2y" value="1"></label></td>
+            <td><label for="q2n"><input type="radio" name="q2" id="q2n" value="0" checked></label></td>
+          </tr>
+          <tr>
+            <td><span class="float-right">a. Headache</span></td>
+            <td><label for="q3y"><input type="radio" name="q3" id="q3y" value="1"></label></td>
+            <td><label for="q3n"><input type="radio" name="q3" id="q3n" value="0" checked></label></td>
+          </tr>
+          <tr>
+            <td><span class="float-right">a. Fever</span></td>
+            <td><label for="q4y"><input type="radio" name="q4" id="q4y" value="1"></label></td>
+            <td><label for="q4n"><input type="radio" name="q4" id="q4n" value="0" checked></label></td>
+          </tr>
+          <tr>
+            <td>Have you worked together or stayed in the same close environment of a confirmed COVID19 case?</td>
+            <td><label for="q5y"><input type="radio" name="q5" id="q5y" value="1"></label></td>
+            <td><label for="q5n"><input type="radio" name="q5" id="q5n" value="0" checked></label></td>
+          </tr>
+          <tr>
+            <td>Have you had any contact with anyone with fever, cough, colds, and sore throat in the past 2 weeks?</td>
+            <td><label for="q6y"><input type="radio" name="q6" id="q6y" value="1"></label></td>
+            <td><label for="q6n"><input type="radio" name="q6" id="q6n" value="0" checked></label></td>
+          </tr>
+          <tr>
+            <td>Have you travelled outside of the Philippines in the last 14 days?</td>
+            <td><label for="q7y"><input type="radio" name="q7" id="q7y" value="1"></label></td>
+            <td><label for="q7n"><input type="radio" name="q7" id="q7n" value="0" checked></label></td>
+          </tr>
+          <tr>
+            <td>Have you travelled to any area in NCR or Metro Manila aside from your home?</td>
+            <td><label for="q8y"><input type="radio" name="q8" id="q8y" value="1"></label></td>
+            <td><label for="q8n"><input type="radio" name="q8" id="q8n" value="0" checked></label></td>
+          </tr>
+        </table>`);
+}
 function interpret_answers(results){
+  set_default_answers();
   results = results.split(",");
-  console.log(results);
   $.each( results, function( i,v ){
-    $("#"+v+"y").trigger("click");
-    console.log("#"+v+"y");
+    $("input[name="+v+"][value=1]").attr('checked', 'checked');
   });
   $("#dti_submit").addClass("d-none");
   $("#dti").modal("show");
@@ -467,6 +467,12 @@ function history(){
         data = myDecipher(results.rows[i]["data"]);
         data = JSON.parse(data);
         var qq = Object.keys(data["dti"]);
+        var temp_qq = "[";
+        $.each( qq, function( i, l ){
+          temp_qq+='"'+l+'"-';
+        });
+        temp_qq=temp_qq.slice(0,-1)+"]";
+        // console.log(qq);
         if(data["temperature"]!=""){data["temperature"] += "°C"}
         var temp = `<tr>
                     <td>`+data["datetime"].replace(',','<br>')+`</td>
@@ -476,7 +482,7 @@ function history(){
                     <td>`+data["address"]+`</td>
                     <td>`+data["city"]+`</td>
                     <td>`+data["province"]+`</td>
-                    <td><button class="btn btn-sm btn-outline-primary" onclick="interpret_answers('`+qq+`')"><small>`+(JSON.stringify(qq))+`</small></button><br></td>
+                    <td><button class="btn btn-sm btn-outline-primary" onclick="interpret_answers('`+qq+`')"><small>`+temp_qq+`</small></button><br></td>
                   </tr>`;
         $("#history_list").append(temp);
       }
