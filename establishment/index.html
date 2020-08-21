@@ -393,7 +393,7 @@ function clear_data(){
   //   tx.executeSql('SELECT * FROM ctracer', [], function (tx, results) {
       if(confirm("Press okay to clear table")){
       db.transaction(function (tx) {
-        tx.executeSql('TRUNCATE TABLE ctracer', [], function (tx, results) {
+        tx.executeSql('DROP TABLE ctracer', [], function (tx, results) {
             alert("Data has been deleted!");
             location.reload();
         });
