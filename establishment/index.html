@@ -184,7 +184,7 @@ const decipher = salt => {
     function decodeOnce(codeReader, selectedDeviceId) {
       codeReader.decodeFromInputVideoDevice(selectedDeviceId, 'video').then((result) => {
         // document.getElementById('result').textContent = result.text
-        set_default_answers();
+        // set_default_answers();
         process_result(result.text,true);
         //ADD DTI FORM HERE
         // alert(result);
@@ -302,7 +302,7 @@ function scan_qr(){
   $("#modal").modal("show");
 }
 $('#modal').on('hidden.bs.modal', function () {
-  set_default_answers();
+  // set_default_answers();
   $("#dti_submit").removeClass("d-none");
   if($('#decoding-style').val() == "once"){
     stop_scan();
@@ -364,7 +364,7 @@ function process_result(result,solo=false){
   }else{
     // alert("SOLO");
     temp_result_storage = result;
-    set_default_answers();
+    set_default_answers(result);
     $("#modal").modal("hide");
     $("#dti").modal("show");
   }
@@ -402,11 +402,31 @@ function clear_data(){
   //   });
   // });
 }
-function set_default_answers(){
-  // for (var i = 8; i > 0; i--) {
-  //   $("input[name=q"+i.toString()+"][value=0]").attr('checked', 'checked');
-  // }
-  $("#dti_modal_body").html(`<table class="table table-sm table-bordered">
+function set_default_answers(result=null){
+  var temp_date = new Date().toLocaleString();
+  // console.log(temp_result_storage);
+  var tt="";
+  if(result!=null){
+    tt=`<table class="table table-sm table-bordered">
+          <tr>
+            <td>Name</td>
+            <th>`+result["firstName"]+` `+result["middleName"]+` `+result["lastName"]+`</th>
+            <td>Date<br>Time</td>
+            <th>`+temp_date+`</th>
+          </tr>
+          <tr>
+            <td>Contact #</td>
+            <th>`+result["contactNumber"]+`</th>
+            <td>Temperature Reading</td>
+            <th>`+$("#temp").val()+`°C</th>
+          </tr>
+          <tr>
+            <td>Address</td>
+            <th colspan="3">`+result["address"]+`, `+result["city"]+`, `+result["province"]+`</th>
+          </tr>
+        </table>`;
+  }
+  $("#dti_modal_body").html(tt+`<table class="table table-sm table-bordered">
           <tr>
             <th></th>
             <th>Yes</th>
