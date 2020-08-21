@@ -200,7 +200,7 @@ const decipher = salt => {
         if (result) {
           // document.getElementById('result').textContent = result.text
           process_result(result.text);
-          // alert(result.text);
+          alert(result.text);
         }
       })
     }
@@ -474,7 +474,10 @@ function history(){
         const myDecipher = decipher('temp');
         data = myDecipher(results.rows[i]["data"]);
         data = JSON.parse(data);
-        var qq = Object.keys(data["dti"]);
+        var qq = [];
+        if(data["dti"]!=null){
+          qq = Object.keys(data["dti"]);
+        }
         var temp_qq = "[";
         $.each( qq, function( i, l ){
           temp_qq+='"'+l+'"-';
