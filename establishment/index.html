@@ -175,9 +175,10 @@ const decipher = salt => {
 // const myCipher = cipher('mySecretSalt');
 // const myDecipher = decipher('mySecretSalt');
 // alert(myDecipher(myCipher('the secret string')));
-    var db = openDatabase('CTracer_DB', '1.0', 'Contact Tracing List', 2 * 1024 * 1024);
+    var db = openDatabase('CTracer_DB', '1.0', 'Contact Tracing List', 10 * 1024 * 1024);
     db.transaction(function (tx) {
-      tx.executeSql('CREATE TABLE IF NOT EXISTS ctracer (id INTEGER PRIMARY KEY,data TEXT);');
+      // tx.executeSql('DROP TABLE ctracer;');//DELETE THIS AFTER
+      tx.executeSql('CREATE TABLE IF NOT EXISTS ctracer (data);');
     });
 
     function decodeOnce(codeReader, selectedDeviceId) {
@@ -375,7 +376,7 @@ function save_data(result){
     const myCipher = cipher('temp');
     var sql = 'INSERT INTO ctracer (data) VALUES ("'+myCipher(JSON.stringify(result))+'")';
     // console.log(sql);
-    tx.executeSql(sql, [], function (tx, results) {
+    tx.executeSql(sql);
     $("#main_screen").prepend(`<div class="alert alert-success alert-dismissible fade show" role="alert" style="position: absolute;left: 28%;top: 4vh;z-index: 1;">
         `+result["firstName"]+" "+result["lastName"]+` added!
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -385,7 +386,6 @@ function save_data(result){
     $("#main_screen").focus();
     $("#main_screen").val("");
     $("#dti").modal("hide");
-    });
   });
 }
 function clear_data(){
@@ -393,7 +393,7 @@ function clear_data(){
   //   tx.executeSql('SELECT * FROM ctracer', [], function (tx, results) {
       if(confirm("Press okay to clear table")){
       db.transaction(function (tx) {
-        tx.executeSql('DROP TABLE ctracer', [], function (tx, results) {
+        tx.executeSql('TRUNCATE TABLE ctracer', [], function (tx, results) {
             alert("Data has been deleted!");
             location.reload();
         });
@@ -472,7 +472,7 @@ function history(){
       $("#input_data").addClass("d-none");
       for (i = 0; i < len; i++) {
         const myDecipher = decipher('temp');
-        data = myDecipher(results.rows[i]["data"]);
+        data = myDecipher(results.rows.item(i).data);
         data = JSON.parse(data);
         var qq = [];
         if(data["dti"]!=null){
