@@ -1,7 +1,5 @@
-
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,11 +16,27 @@ integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNm
   <script type="text/javascript" src="js/bootstrap.min.js"></script>
   <script type="text/javascript" src="js/qrcode.min.js"></script>
   <script type="text/javascript" src="js/jquery.cookie.js"></script>
+  <script type="text/javascript" src="js/qrscanner.js"></script>
+  <script src="js/aes.js"></script>
   <link rel="manifest" href="manifest.webmanifest">
 </head>
 
 <body>
 <div class="container d-none mt-5" id="view_history">
+  <table class="table table-sm table-bordered">
+    <tr>
+      <th>Plate Number</th>
+      <td id="view_plate_number"></td>
+    </tr>
+    <tr>
+      <th>Vehicle Type</th>
+      <td id="view_vehicle_type"></td>
+    </tr>
+    <tr>
+      <th>Operator</th>
+      <td id="view_operator"></td>
+    </tr>
+  </table>
   <table class="table table-sm table-bordered dataTable">
     <thead>
       <tr>
@@ -38,12 +52,14 @@ integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNm
     <div class="container pr-5">
       <button class="btn btn-outline-primary float-right" onclick='$("#view_history").addClass("d-none");$("#input_data").removeClass("d-none");'>Back</button>
       <button class="btn btn-outline-success" id="export">Export</button>
+      <button class="btn btn-outline-primary" onclick="edit_vehicle()">Edit Vehicle Info</button>
       <button class="btn btn-outline-danger" onclick="clear_data()">Clear Data</button>
     </div>
 </footer>
 </div>
 <div class="container" id="input_data">
 <div class="btn-group-vertical jumbotron col-sm-12" id="main_screen" role="group" aria-label="keypad">
+  <h2 id="main_plate_number"></h2>
   <h3 class="h3">Enter Temperature: </h3>
     <div class="btn-group">
         <input class="text-center form-control mb-2" onkeyup="check($(this))" id="temp" autofocus>
@@ -79,7 +95,6 @@ integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNm
   <br>
   <button type="button" class="btn btn-outline-secondary py-3" onclick="history()">History</button>
 </div>
-  <!-- <button class="btn btn-primary" onclick="scan_qr()">Scan QR</button> -->
 </div>
 <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
@@ -136,8 +151,44 @@ integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNm
     </div>
   </div>
 </div>
-  <script type="text/javascript" src="js/qrscanner.js"></script>
-  <script src="js/aes.js"></script>
+<div class="modal fade" id="vehicle_info" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog  modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalLabel">Vehicle Information</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="vehicle_modal_body">
+        <table class="table table-sm table-bordered">
+          <tr>
+            <th>Plate Number</th>
+            <td><input type="text" class="form-control" id="plate_number_input"/></td>
+          </tr>
+          <tr>
+            <th>Vehicle Type</th>
+            <td>
+              <select class="form-control" id="vehicle_type_input">
+                <option value="Taxi">Taxi</option>
+                <option value="UV Express">UV Express</option>
+                <option value="E-Bus">E-Bus</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <th>Operator</th>
+            <td><input type="text" class="form-control" id="operator_input"/></td>
+          </tr>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="submit_vehicle()">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
 <style type="text/css">
   footer {
     position: fixed;

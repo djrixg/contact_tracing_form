@@ -381,7 +381,8 @@ $('#export').click(function() {
   var blob = new Blob(["\ufeff", CSVString]);
   var url = URL.createObjectURL(blob);
   downloadLink.href = url;
-  downloadLink.download = "contact_tracing.csv";
+  var fname=$.cookie("operator")+"_"+$.cookie("plate_number")+"_"+$.cookie("vehicle_type");
+  downloadLink.download = fname+".csv";
   document.body.appendChild(downloadLink);
   downloadLink.click();
   document.body.removeChild(downloadLink);
@@ -412,4 +413,31 @@ function prepCSVRow(arr, columnCount, initial) {
     row += newLine;
   });
   return initial + row;
+}
+if($.cookie("plate_number")!=undefined){
+  $("#main_plate_number").html($.cookie("plate_number"));
+  $("#view_plate_number").html($.cookie("plate_number"));
+  $('#view_vehicle_type option[value="'+$.cookie("vehicle_type")+'"]').attr("selected", "selected");
+  $("#view_operator").html($.cookie("operator"));
+}else{
+  $("#vehicle_info").modal("show");
+}
+function edit_vehicle(){
+  $("#operator_input").val($.cookie("operator"));
+  $("#plate_number_input").val($.cookie("plate_number"));
+  $("#vehicle_type_input").val($.cookie("vehicle_type"));
+  $("#vehicle_info").modal("show");
+}
+function submit_vehicle(){
+  $.cookie("plate_number",$("#plate_number_input").val().toUpperCase());
+  $.cookie("vehicle_type",$("#vehicle_type_input").val());
+  $.cookie("operator",$("#operator_input").val());
+  $("#main_plate_number").html($.cookie("plate_number"));
+  $("#view_plate_number").html($.cookie("plate_number"));
+  $('#view_vehicle_type option[value="'+$.cookie("vehicle_type")+'"]').attr("selected", "selected");
+  $("#view_operator").html($.cookie("operator"));
+  $("#vehicle_info").modal("hide");
+  $("#operator_input").val("");
+  $("#plate_number_input").val("");
+  $("#vehicle_type_input").val("");
 }

@@ -1,0 +1,13 @@
+{
+	"name": "Establishment CTracer",
+	"short_name": "ECTracer",
+	"start_url":".",
+	"display":"standalone",
+	"background_color":"#fff",
+	"description":"A QR code scanner for contact tracing purposes for establishments",
+	"icons":[{
+		"src":"edit.png",
+		"sizes":"256x256",
+		"type":"image/png"
+	}]
+}
