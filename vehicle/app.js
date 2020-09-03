@@ -417,7 +417,7 @@ function prepCSVRow(arr, columnCount, initial) {
 if($.cookie("plate_number")!=undefined){
   $("#main_plate_number").html($.cookie("plate_number"));
   $("#view_plate_number").html($.cookie("plate_number"));
-  $('#view_vehicle_type option[value="'+$.cookie("vehicle_type")+'"]').attr("selected", "selected");
+  $("#view_vehicle_type").html($.cookie("vehicle_type"));
   $("#view_operator").html($.cookie("operator"));
 }else{
   $("#vehicle_info").modal("show");
@@ -425,7 +425,7 @@ if($.cookie("plate_number")!=undefined){
 function edit_vehicle(){
   $("#operator_input").val($.cookie("operator"));
   $("#plate_number_input").val($.cookie("plate_number"));
-  $("#vehicle_type_input").val($.cookie("vehicle_type"));
+  $('#vehicle_type_input option[value="'+$.cookie("vehicle_type")+'"]').attr("selected", "selected");
   $("#vehicle_info").modal("show");
 }
 function submit_vehicle(){
@@ -434,7 +434,7 @@ function submit_vehicle(){
   $.cookie("operator",$("#operator_input").val());
   $("#main_plate_number").html($.cookie("plate_number"));
   $("#view_plate_number").html($.cookie("plate_number"));
-  $('#view_vehicle_type option[value="'+$.cookie("vehicle_type")+'"]').attr("selected", "selected");
+  $("#view_vehicle_type").html($.cookie("vehicle_type"));
   $("#view_operator").html($.cookie("operator"));
   $("#vehicle_info").modal("hide");
   $("#operator_input").val("");
