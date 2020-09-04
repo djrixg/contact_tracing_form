@@ -381,7 +381,8 @@ $('#export').click(function() {
   var blob = new Blob(["\ufeff", CSVString]);
   var url = URL.createObjectURL(blob);
   downloadLink.href = url;
-  var fname=$.cookie("operator")+"_"+$.cookie("plate_number")+"_"+$.cookie("vehicle_type");
+  var datetime = new Date().toISOString().slice(0,10);
+  var fname=datetime+"_"+$.cookie("operator")+"_"+$.cookie("plate_number")+"_"+$.cookie("vehicle_type");
   downloadLink.download = fname+".csv";
   document.body.appendChild(downloadLink);
   downloadLink.click();
@@ -429,9 +430,9 @@ function edit_vehicle(){
   $("#vehicle_info").modal("show");
 }
 function submit_vehicle(){
-  $.cookie("plate_number",$("#plate_number_input").val().toUpperCase());
-  $.cookie("vehicle_type",$("#vehicle_type_input").val());
-  $.cookie("operator",$("#operator_input").val());
+  $.cookie("plate_number",$("#plate_number_input").val().toUpperCase(),date.getTime() + (525600 * 60 * 1000));
+  $.cookie("vehicle_type",$("#vehicle_type_input").val(),date.getTime() + (525600 * 60 * 1000));
+  $.cookie("operator",$("#operator_input").val(),date.getTime() + (525600 * 60 * 1000));
   $("#main_plate_number").html($.cookie("plate_number"));
   $("#view_plate_number").html($.cookie("plate_number"));
   $("#view_vehicle_type").html($.cookie("vehicle_type"));
