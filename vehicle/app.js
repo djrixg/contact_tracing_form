@@ -351,7 +351,8 @@ function history(){
       $("#view_history").removeClass("d-none");
       $("#input_data").addClass("d-none");
       for (i = 0; i < len; i++) {
-        $("#history_list").append("<tr><td>"+(i+1).toString()+"</td><td>"+results.rows.item(i).data+"</td></tr>");
+        $("#history_list").append("<tr><td>"+results.rows.item(i).data+"</td></tr>");
+        // $("#history_list").append("<tr><td>"+(i+1).toString()+"</td><td>"+results.rows.item(i).data+"</td></tr>");
       }
       $('[data-toggle="tooltip"]').tooltip();
       $("#history_modal").modal("show");
@@ -377,21 +378,37 @@ $('#export').click(function() {
   });
   var CSVString = prepCSVRow(titles, titles.length, '');
   CSVString = prepCSVRow(data, titles.length, CSVString);
-  var downloadLink = document.createElement("a");
-  var blob = new Blob(["\ufeff", CSVString]);
-  var url = URL.createObjectURL(blob);
-  downloadLink.href = url;
-  var datetime = new Date().toISOString().slice(0,10);
-  var fname=datetime+"_"+$.cookie("operator")+"_"+$.cookie("plate_number")+"_"+$.cookie("vehicle_type");
-  downloadLink.download = fname+".csv";
-  document.body.appendChild(downloadLink);
-  downloadLink.click();
-  document.body.removeChild(downloadLink);
+  if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+    var fname=$.cookie("operator")+"_"+$.cookie("plate_number")+"_"+$.cookie("vehicle_type");
+    window.open('mailto:djrixg@gmail.com?subject='+fname+'&body='+CSVString);
+  }else{
+    // var downloadLink = document.createElement("a");
+    // var url = "https://mail.google.com/mail/?view=cm&fs=1&to=djrixg@gmail.com&su="+fname+"&body="+CSVString;
+    // downloadLink.href = url;
+    // downloadLink.target = "_blank";
+    // var fname=$.cookie("operator")+"_"+$.cookie("plate_number")+"_"+$.cookie("vehicle_type");
+    // document.body.appendChild(downloadLink);
+    // downloadLink.click();
+    // document.body.removeChild(downloadLink);
+    // --------------------------------------------------------------------------------------------------
+    var downloadLink = document.createElement("a");
+    var blob = new Blob(["\ufeff", CSVString]);
+    var url = URL.createObjectURL(blob);
+    downloadLink.href = url;
+    var datetime = new Date().toISOString().slice(0,10);
+    var fname=datetime+"_"+$.cookie("operator")+"_"+$.cookie("plate_number")+"_"+$.cookie("vehicle_type");
+    downloadLink.download = fname+".csv";
+    downloadLink.textContent = "Download "+fname+".csv";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  }
 });
 function prepCSVRow(arr, columnCount, initial) {
   var row = ''; // this will hold data
   var delimeter = ','; // data slice separator, in excel it's `;`, in usual CSv it's `,`
-  var newLine = '\r\n'; // newline separator for CSV row
+  var newLine = ';'; // newline separator for CSV row
+  // var newLine = '\r\n'; // newline separator for CSV row
   function splitArray(_arr, _count) {
     var splitted = [];
     var result = [];
