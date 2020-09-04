@@ -378,27 +378,18 @@ $('#export').click(function() {
   });
   var CSVString = prepCSVRow(titles, titles.length, '');
   CSVString = prepCSVRow(data, titles.length, CSVString);
+  var fname=$.cookie("operator")+"_"+$.cookie("plate_number")+"_"+$.cookie("vehicle_type");
   if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-    var fname=$.cookie("operator")+"_"+$.cookie("plate_number")+"_"+$.cookie("vehicle_type");
     window.open('mailto:djrixg@gmail.com?subject='+fname+'&body='+CSVString);
   }else{
-    // var downloadLink = document.createElement("a");
-    // var url = "https://mail.google.com/mail/?view=cm&fs=1&to=djrixg@gmail.com&su="+fname+"&body="+CSVString;
-    // downloadLink.href = url;
-    // downloadLink.target = "_blank";
-    // var fname=$.cookie("operator")+"_"+$.cookie("plate_number")+"_"+$.cookie("vehicle_type");
-    // document.body.appendChild(downloadLink);
-    // downloadLink.click();
-    // document.body.removeChild(downloadLink);
-    // --------------------------------------------------------------------------------------------------
+    // var url = "https://mail.google.com/mail/?view=cm&fs=1&to=email@example.com&su="+fname+"&body="+CSVString;
     var downloadLink = document.createElement("a");
     var blob = new Blob(["\ufeff", CSVString]);
     var url = URL.createObjectURL(blob);
     downloadLink.href = url;
     var datetime = new Date().toISOString().slice(0,10);
-    var fname=datetime+"_"+$.cookie("operator")+"_"+$.cookie("plate_number")+"_"+$.cookie("vehicle_type");
+    fname=datetime+"_"+$.cookie("operator")+"_"+$.cookie("plate_number")+"_"+$.cookie("vehicle_type");
     downloadLink.download = fname+".csv";
-    downloadLink.textContent = "Download "+fname+".csv";
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
